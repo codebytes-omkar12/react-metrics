@@ -1,7 +1,8 @@
-import { useState,useRef,useLayoutEffect,useEffect,useCallback } from "react";
+import { useState,useRef,useLayoutEffect,useEffect} from "react";
 import { type IMetrics, type IPropChange } from "../types";
+import { usePerformanceContext } from "../context/PerformanceContext";
 
- function usePerformanceMonitor(componentName:string,props:Record<string,any>){
+ function usePerformanceMonitor(componentName:string,props:Record<string,any>,options?:{parentId?:string; componentPath?:string}){
 
       const[metrics,setMetrics]=useState<IMetrics>({
          mountTime:0,
@@ -9,17 +10,20 @@ import { type IMetrics, type IPropChange } from "../types";
          totalRenderDuration: 0,
          reRenders:0,
          propsChanged:{},
-        _prevProps:undefined
+        _prevProps:undefined,
+        parentId:options?.parentId,
+        componentPath:options?.componentPath
       });
       const mountStart=useRef<number|null>(0);
       const renderCount=useRef<number|null>(0);
       const lastRenderTime=useRef<number|null>(0);
 
+      const {addOrUpdateMetrics} = usePerformanceContext();
+
 
       useLayoutEffect(() => {
         mountStart.current=performance.now()
-        return () => {
-            const mountEnd=performance.now();
+        const mountEnd=performance.now();
             let calculatedMountTime=0;
             if(mountStart.current){
                        calculatedMountTime=mountEnd-mountStart.current;
@@ -31,9 +35,7 @@ import { type IMetrics, type IPropChange } from "../types";
             ...prev,
             mountTime: calculatedMountTime
           })) 
-           
-          ;
-        };
+        
       }, [])
 
 
@@ -55,16 +57,7 @@ useEffect(() => {
     console.warn("Last Render Time was not read");
   }
 
-  setMetrics(prev => ({
-    ...prev,
-    lastRenderDuration: calculatedLastRenderDuration,
-    totalRenderDuration: prev.totalRenderDuration + calculatedLastRenderDuration,
-    reRenders: renderCount.current ?? prev.reRenders
-  }));
-
-  lastRenderTime.current = currentRenderTime;
- 
- const findPropChanges=(oldProps:Record<string,any>|undefined,newProps:Record<string,any>):Record<string,IPropChange>=>{
+  const findPropChanges=(oldProps:Record<string,any>|undefined,newProps:Record<string,any>):Record<string,IPropChange>=>{
    const changes:Record<string,IPropChange>={};
      if(!oldProps){
         return changes;
@@ -95,16 +88,28 @@ useEffect(() => {
    const newPropsComparision = props;
 
    const detectedPropChange=findPropChanges(oldPropsComparision,newPropsComparision);
+   const actualMountTime = (renderCount.current===1 &&prev.mountTime===0)?currentRenderTime:prev.mountTime;
 
-   return{
+   const updatedMetrics:IMetrics={
     ...prev,
+    mountTime:actualMountTime,
+    lastRenderDuration: calculatedLastRenderDuration,
+    totalRenderDuration: prev.totalRenderDuration + calculatedLastRenderDuration,
+    reRenders: renderCount.current ?? prev.reRenders,
     propsChanged:detectedPropChange,
-    _prevProps:newPropsComparision
+    _prevProps:newPropsComparision,
+    parentId:options?.parentId,
+    componentPath:options?.componentPath
    }
- })
+   addOrUpdateMetrics(componentName,updatedMetrics);
 
-  return () => {};
-}, [props])
+   return updatedMetrics
+ })
+ 
+ lastRenderTime.current = currentRenderTime;
+
+
+}, [props,componentName,addOrUpdateMetrics,options])
       
 
 

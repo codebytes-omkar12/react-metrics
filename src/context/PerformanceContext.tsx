@@ -1,19 +1,62 @@
-import { useContext,createContext,useState,useCallback } from "react";
+import { useContext,createContext,useState,useCallback,useEffect } from "react";
 import type {PropsWithChildren} from "react";
-import { type IAllComponentMetrics, type IPerformanceContextValue,type IPropChange, type IMetrics } from "../types";
+import { type IAllComponentMetrics, type IPerformanceContextValue,type IPropChange, type IMetrics, type IBundleMetrics, type IMemoryMetrics } from "../types";
 
 const PerformanceContext =createContext<IPerformanceContextValue|undefined>(undefined);
 
 type PerformanceProviderProps=PropsWithChildren<{}>
-const PerformanceProvider:React.FC<PerformanceProviderProps>=({children})=>{
+export const PerformanceProvider:React.FC<PerformanceProviderProps>=({children})=>{
      const [allMetrics,setAllMetrics]=useState<IAllComponentMetrics>({});
+     const[currentMemoryMetrics,setCurrentMemoryMetrics]=useState<IMemoryMetrics|null>(null)
+     const [bundleMetrics,setBundleMetrics]= useState<IBundleMetrics |null>(null)
 
-     const 
+     //add new component and its metrics to the allcomponentmetrics
+     const addOrUpdateMetrics = useCallback(
+        (componentName:string,metrics:IMetrics)=>{
+            setAllMetrics(prev=>({
+                ...prev,
+                [componentName]:metrics,
+
+            }));
+        }
+     ,[])
+
+     //update the memory metrics
+     const updateMemoryMetrics= useCallback(
+       (metrics:IMemoryMetrics) => {
+        setCurrentMemoryMetrics(metrics)
+         
+       },
+       [],
+     )
+
+     useEffect(() => {
+       setBundleMetrics({totalSizeKB:1234})
+     
+     }, [ ])
+     
+     
+    const contextValue:IPerformanceContextValue={
+        allMetrics,
+        addOrUpdateMetrics,
+        currentMemoryMetrics,
+        bundleMetrics,
+        updateMemoryMetrics
+    }
+     
     return(
-        <PerformanceContext.Provider value={allMetrics}>
-
+        <PerformanceContext.Provider value={contextValue}>
+            {children}
         </PerformanceContext.Provider>
     )
+}
+
+export const usePerformanceContext = () =>{
+    const context=useContext(PerformanceContext);
+    if(context === undefined){
+        throw new Error('usePerformanceContext must be used within a PerformanceProvider')
+    }
+    return context;
 }
 
     
