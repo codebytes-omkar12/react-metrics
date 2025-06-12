@@ -9,7 +9,7 @@ export interface IMetrics{
 
 export interface IPropChange{
  from:any;
- to:any;0
+ to:any;
 }
 
 export type IAllComponentMetrics = Record<string,IMetrics>;

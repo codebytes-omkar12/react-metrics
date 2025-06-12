@@ -21,7 +21,7 @@ import { type IMetrics, type IPropChange } from "../types";
         return () => {
             const mountEnd=performance.now();
             let calculatedMountTime=0;
-            if(typeof mountStart.current=='number'){
+            if(mountStart.current){
                        calculatedMountTime=mountEnd-mountStart.current;
             }
             else{
@@ -37,9 +37,9 @@ import { type IMetrics, type IPropChange } from "../types";
       }, [])
 
 
-      useEffect(() => {
-        // Increment render count
-  if (typeof renderCount.current === "number") {
+useEffect(() => {
+        
+  if ( renderCount.current) {
     renderCount.current += 1;
   } else {
     renderCount.current = 1;
@@ -49,7 +49,7 @@ import { type IMetrics, type IPropChange } from "../types";
   const currentRenderTime = performance.now();
   let calculatedLastRenderDuration = 0;
 
-  if (typeof lastRenderTime.current === "number") {
+  if (lastRenderTime.current) {
     calculatedLastRenderDuration = currentRenderTime - lastRenderTime.current;
   } else {
     console.warn("Last Render Time was not read");
@@ -59,10 +59,49 @@ import { type IMetrics, type IPropChange } from "../types";
     ...prev,
     lastRenderDuration: calculatedLastRenderDuration,
     totalRenderDuration: prev.totalRenderDuration + calculatedLastRenderDuration,
-    reRenders: renderCount.current ?? 0
+    reRenders: renderCount.current ?? prev.reRenders
   }));
 
   lastRenderTime.current = currentRenderTime;
+ 
+ const findPropChanges=(oldProps:Record<string,any>|undefined,newProps:Record<string,any>):Record<string,IPropChange>=>{
+   const changes:Record<string,IPropChange>={};
+     if(!oldProps){
+        return changes;
+     }
+     for(const key of Object.keys(newProps)) {
+          const oldValue=oldProps[key];
+          const newValue=newProps[key];
+          if(newValue!==oldValue){
+            try{
+                if(JSON.stringify(oldValue)!==JSON.stringify(newValue)){
+                    changes[key]={from:oldValue,to:newValue}
+                }
+                
+            }
+            catch(e){
+                changes[key]={from:'[complex type]',to:'[complex type]'}
+            }
+          
+          }
+      
+     }
+     return changes;
+     
+ }
+
+ setMetrics((prev)=>{
+   const oldPropsComparision = prev._prevProps;
+   const newPropsComparision = props;
+
+   const detectedPropChange=findPropChanges(oldPropsComparision,newPropsComparision);
+
+   return{
+    ...prev,
+    propsChanged:detectedPropChange,
+    _prevProps:newPropsComparision
+   }
+ })
 
   return () => {};
 }, [props])
@@ -72,10 +111,7 @@ import { type IMetrics, type IPropChange } from "../types";
 
 
 
-    return(<>
-
-
-        </>)
+    return metrics;
 }
 
 export default usePerformanceMonitor
