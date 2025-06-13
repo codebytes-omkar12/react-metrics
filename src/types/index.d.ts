@@ -31,7 +31,7 @@ export interface IBundleMetrics {
 
 export interface IMemoryMetrics{
   jsHeapSizeLimit:number;
-  totaljsheapSize:number;
+  totalJSHeapSize:number;
   usedJSHeapSize:number;
   timestamp:number;
 }

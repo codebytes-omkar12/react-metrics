@@ -23,9 +23,8 @@ export const PerformanceProvider:React.FC<PerformanceProviderProps>=({children})
 
      //update the memory metrics
      const updateMemoryMetrics= useCallback(
-       (metrics:IMemoryMetrics) => {
+       (metrics:IMemoryMetrics|null) => {
         setCurrentMemoryMetrics(metrics)
-         
        },
        [],
      )
