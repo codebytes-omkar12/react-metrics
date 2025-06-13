@@ -1,4 +1,4 @@
-import { useState,useRef,useLayoutEffect,useEffect} from "react";
+import { useState,useRef,useEffect} from "react";
 import { type IMetrics, type IPropChange } from "../types";
 import { usePerformanceContext } from "../context/PerformanceContext";
 
@@ -18,19 +18,7 @@ import { usePerformanceContext } from "../context/PerformanceContext";
                 const oldValue=oldProps[key];
                 const newValue=newProps[key];
             if (oldValue !== newValue) {
-        
-               if (typeof oldValue === 'object' && oldValue !== null && typeof newValue === 'object' && newValue !== null) 
-                {
-                changes[key] = { from: '[Object/Array]', to: '[Object/Array]' };
-                } 
-            else if (typeof oldValue === 'function' && typeof newValue === 'function')
-               {
-                changes[key] = { from: '[Function]', to: '[Function]' };
-               } 
-            else {
-                
                 changes[key] = { from: oldValue, to: newValue };
-            }
         }
     });
 
