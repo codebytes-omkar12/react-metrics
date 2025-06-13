@@ -2,7 +2,10 @@ import { useState,useRef,useLayoutEffect,useEffect} from "react";
 import { type IMetrics, type IPropChange } from "../types";
 import { usePerformanceContext } from "../context/PerformanceContext";
 
- function usePerformanceMonitor(componentName:string,props:Record<string,any>,options?:{parentId?:string; componentPath?:string}){
+export function usePerformanceMonitor(componentName:string,props:Record<string,any>,options?:{parentId?:string; componentPath?:string}){
+
+  //destructuring the optional object
+     const{parentId,componentPath}=options||{}
 
       const[metrics,setMetrics]=useState<IMetrics>({
          mountTime:0,
@@ -11,18 +14,19 @@ import { usePerformanceContext } from "../context/PerformanceContext";
          reRenders:0,
          propsChanged:{},
         _prevProps:undefined,
-        parentId:options?.parentId,
-        componentPath:options?.componentPath
+        parentId:parentId,
+        componentPath:componentPath
       });
-      const mountStart=useRef<number|null>(0);
-      const renderCount=useRef<number|null>(0);
-      const lastRenderTime=useRef<number|null>(0);
+      const mountStart=useRef<number>(performance.now());
+      const renderCount=useRef<number>(1);
+      const lastRenderTime=useRef<number>(0);
+      
 
       const {addOrUpdateMetrics} = usePerformanceContext();
 
 
       useLayoutEffect(() => {
-        mountStart.current=performance.now()
+        
         const mountEnd=performance.now();
             let calculatedMountTime=0;
             if(mountStart.current){
@@ -39,6 +43,8 @@ import { usePerformanceContext } from "../context/PerformanceContext";
       }, [])
 
 
+
+      
 useEffect(() => {
         
   if ( renderCount.current) {
@@ -88,35 +94,27 @@ useEffect(() => {
    const newPropsComparision = props;
 
    const detectedPropChange=findPropChanges(oldPropsComparision,newPropsComparision);
-   const actualMountTime = (renderCount.current===1 &&prev.mountTime===0)?currentRenderTime:prev.mountTime;
+  
 
    const updatedMetrics:IMetrics={
     ...prev,
-    mountTime:actualMountTime,
     lastRenderDuration: calculatedLastRenderDuration,
     totalRenderDuration: prev.totalRenderDuration + calculatedLastRenderDuration,
     reRenders: renderCount.current ?? prev.reRenders,
     propsChanged:detectedPropChange,
     _prevProps:newPropsComparision,
-    parentId:options?.parentId,
-    componentPath:options?.componentPath
+    parentId:parentId,
+    componentPath:componentPath
    }
-   addOrUpdateMetrics(componentName,updatedMetrics);
-
-   return updatedMetrics
+  return updatedMetrics
  })
- 
  lastRenderTime.current = currentRenderTime;
+}, [props,addOrUpdateMetrics,parentId,componentPath])
 
+useEffect(() => {
+   addOrUpdateMetrics(componentName, metrics);
+}, [metrics,addOrUpdateMetrics])
 
-}, [props,componentName,addOrUpdateMetrics,options])
-      
-
-
-
-
-
-    return metrics;
+      return metrics;
 }
 
-export default usePerformanceMonitor
