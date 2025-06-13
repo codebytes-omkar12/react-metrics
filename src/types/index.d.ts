@@ -22,7 +22,7 @@ export interface IPerformanceContextValue{
     addOrUpdateMetrics:(componentName:string,metrics:IMetrics)=>void;
     currentMemoryMetrics:IMemoryMetrics | null;
     bundleMetrics:IBundleMetrics | null;
-    updateMemoryMetrics:(metrics:IMemoryMetrics)=>void;
+    updateMemoryMetrics:(metrics:IMemoryMetrics|null)=>void;
 }
 
 export interface IBundleMetrics {
