@@ -2,6 +2,46 @@ import { useState,useRef,useLayoutEffect,useEffect} from "react";
 import { type IMetrics, type IPropChange } from "../types";
 import { usePerformanceContext } from "../context/PerformanceContext";
 
+
+
+// to find the propchanges 
+  const findPropChanges=(oldProps:Record<string,any>|undefined,newProps:Record<string,any>):Record<string,IPropChange>=>{
+   const changes:Record<string,IPropChange>={};
+     if(!oldProps){
+        return changes;
+     }
+
+     const allKeys= new Set({...Object.keys(oldProps),...Object.keys(newProps)})
+
+
+     allKeys.forEach((key)=>{
+                const oldValue=oldProps[key];
+                const newValue=newProps[key];
+            if (oldValue !== newValue) {
+        
+               if (typeof oldValue === 'object' && oldValue !== null && typeof newValue === 'object' && newValue !== null) 
+                {
+                changes[key] = { from: '[Object/Array]', to: '[Object/Array]' };
+                } 
+            else if (typeof oldValue === 'function' && typeof newValue === 'function')
+               {
+                changes[key] = { from: '[Function]', to: '[Function]' };
+               } 
+            else {
+                
+                changes[key] = { from: oldValue, to: newValue };
+            }
+        }
+    });
+
+     
+      
+     
+     return changes;
+  }
+     
+ 
+
 export function usePerformanceMonitor(componentName:string,props:Record<string,any>,options?:{parentId?:string; componentPath?:string}){
 
   //destructuring the optional object
@@ -17,34 +57,16 @@ export function usePerformanceMonitor(componentName:string,props:Record<string,a
         parentId:parentId,
         componentPath:componentPath
       });
-      const mountStart=useRef<number>(performance.now());
-      const renderCount=useRef<number>(1);
+    
+      const renderCount=useRef<number>(0);
       const lastRenderTime=useRef<number>(0);
       
 
       const {addOrUpdateMetrics} = usePerformanceContext();
 
 
-      useLayoutEffect(() => {
-        
-        const mountEnd=performance.now();
-            let calculatedMountTime=0;
-            if(mountStart.current){
-                       calculatedMountTime=mountEnd-mountStart.current;
-            }
-            else{
-                console.warn("mount time was not recorded or the the component before unmount")
-            }
-               setMetrics(prev => ({
-            ...prev,
-            mountTime: calculatedMountTime
-          })) 
-        
-      }, [])
-
-
-
-      
+     
+   //core hook functtionality
 useEffect(() => {
         
   if ( renderCount.current) {
@@ -63,41 +85,18 @@ useEffect(() => {
     console.warn("Last Render Time was not read");
   }
 
-  const findPropChanges=(oldProps:Record<string,any>|undefined,newProps:Record<string,any>):Record<string,IPropChange>=>{
-   const changes:Record<string,IPropChange>={};
-     if(!oldProps){
-        return changes;
-     }
-     for(const key of Object.keys(newProps)) {
-          const oldValue=oldProps[key];
-          const newValue=newProps[key];
-          if(newValue!==oldValue){
-            try{
-                if(JSON.stringify(oldValue)!==JSON.stringify(newValue)){
-                    changes[key]={from:oldValue,to:newValue}
-                }
-                
-            }
-            catch(e){
-                changes[key]={from:'[complex type]',to:'[complex type]'}
-            }
-          
-          }
-      
-     }
-     return changes;
-     
- }
 
  setMetrics((prev)=>{
    const oldPropsComparision = prev._prevProps;
    const newPropsComparision = props;
 
    const detectedPropChange=findPropChanges(oldPropsComparision,newPropsComparision);
+   const actualMountTime=(renderCount.current===1)?currentRenderTime:prev.mountTime
   
 
    const updatedMetrics:IMetrics={
     ...prev,
+    mountTime:actualMountTime,
     lastRenderDuration: calculatedLastRenderDuration,
     totalRenderDuration: prev.totalRenderDuration + calculatedLastRenderDuration,
     reRenders: renderCount.current ?? prev.reRenders,
@@ -106,14 +105,21 @@ useEffect(() => {
     parentId:parentId,
     componentPath:componentPath
    }
+   
   return updatedMetrics
  })
+ 
+
  lastRenderTime.current = currentRenderTime;
 }, [props,addOrUpdateMetrics,parentId,componentPath])
 
 useEffect(() => {
-   addOrUpdateMetrics(componentName, metrics);
-}, [metrics,addOrUpdateMetrics])
+        
+        if (metrics.reRenders >= 0) { 
+            addOrUpdateMetrics(componentName, metrics);
+        }
+    }, [metrics, componentName, addOrUpdateMetrics]);
+
 
       return metrics;
 }
