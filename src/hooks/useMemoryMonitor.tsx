@@ -1,5 +1,5 @@
 import{useRef,useEffect} from 'react'
-import type{ IMemoryMetrics } from '../types'
+import type{ IMemoryMetrics } from '../types/performance'
 import { usePerformanceContext } from '../context/PerformanceContext'
 
 

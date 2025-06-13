@@ -1,5 +1,5 @@
 import { useState,useRef,useEffect} from "react";
-import { type IMetrics, type IPropChange } from "../types";
+import { type IMetrics, type IPropChange } from "../types/performance";
 import { usePerformanceContext } from "../context/PerformanceContext";
 
 

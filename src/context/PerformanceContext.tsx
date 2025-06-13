@@ -1,6 +1,6 @@
 import { useContext,createContext,useState,useCallback,useEffect } from "react";
 import type {PropsWithChildren} from "react";
-import { type IAllComponentMetrics, type IPerformanceContextValue,type IPropChange, type IMetrics, type IBundleMetrics, type IMemoryMetrics } from "../types";
+import { type IAllComponentMetrics, type IPerformanceContextValue, type IMetrics, type IBundleMetrics, type IMemoryMetrics } from "../types/performance";
 
 const PerformanceContext =createContext<IPerformanceContextValue|undefined>(undefined);
 
