@@ -35,8 +35,10 @@ export function useMemoryMonitor(options?:{intervalMs:number}){
         }
         updateMemoryMetrics(updatedMemoryMetrics)
       };
-
-      sampleMemory();
+      setTimeout(() => {
+        sampleMemory();
+      }, 500);
+      
 intervalRef.current=setInterval(() => {
   sampleMemory();
 }, intervalMs);

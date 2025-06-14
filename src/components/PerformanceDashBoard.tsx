@@ -35,7 +35,10 @@ const PerformanceDashboard:React.FC=()=>{
                 </p> */}
             </>):(<p className="text-red-600">Waiting for memory data...</p>)):(<p className="text-red-500">Memory monitoring is not available in this browser</p>)}
        </div>
-       
+       {bundleMetrics&&(<div className="mb-6 p-4 border-gray-200 rounded-md bg-gray-50">
+        <h3 className="text-xl font-semibold text-gray-700 mb-3">Bundle Metrics</h3>
+        <p className="text-green-900"><strong className="font-medium">Total Bundle Size:</strong>{bundleMetrics.totalSizeKB} KB</p>
+       </div>)}
     </div>
     )
 }
