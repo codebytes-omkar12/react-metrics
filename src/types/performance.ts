@@ -17,13 +17,13 @@ export interface IPropChange{
 export type IAllComponentMetrics = Record<string,IMetrics>;
 
 
-export interface IPerformanceContextValue{
-    allMetrics:IAllComponentMetrics;
-    addOrUpdateMetrics:(componentName:string,metrics:IMetrics)=>void;
-    currentMemoryMetrics:IMemoryMetrics | null;
-    bundleMetrics:IBundleMetrics | null;
-    updateMemoryMetrics:(metrics:IMemoryMetrics|null)=>void;
-}
+// export interface IPerformanceContextValue{
+//     allMetrics:IAllComponentMetrics;
+//     addOrUpdateMetrics:(componentName:string,metrics:IMetrics)=>void;
+//     currentMemoryMetrics:IMemoryMetrics | null;
+//     bundleMetrics:IBundleMetrics | null;
+//     updateMemoryMetrics:(metrics:IMemoryMetrics|null)=>void;
+// }
 
 export interface IBundleMetrics {
   totalSizeKB:number;

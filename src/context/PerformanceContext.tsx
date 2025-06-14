@@ -1,12 +1,24 @@
 import { useContext,createContext,useState,useCallback,useEffect,useMemo } from "react";
 import type {PropsWithChildren} from "react";
-import { type IAllComponentMetrics, type IPerformanceContextValue, type IMetrics, type IBundleMetrics, type IMemoryMetrics } from "../types/performance";
+import { type IAllComponentMetrics, type IMetrics, type IBundleMetrics, type IMemoryMetrics } from "../types/performance";
 
 
+interface IPerformanceMetricsState{
+    allMetrics:IAllComponentMetrics;
+    currentMemoryMetrics:IMemoryMetrics | null;
+    bundleMetrics:IBundleMetrics|null;
+}
 
-const PerformanceContext =createContext<IPerformanceContextValue|undefined>(undefined);
+interface IPerformanceMetricsDispatch{
+    addOrUpdateMetrics:(componentname:string,metrics:IMetrics)=>void;
+     updateMemoryMetrics: (metrics: IMemoryMetrics | null) => void;
+
+}
+const PerformanceMetricsStateContext = createContext<IPerformanceMetricsState | undefined>(undefined);
+const PerformanceMetricsDispatchContext = createContext<IPerformanceMetricsDispatch | undefined>(undefined);
 
 type PerformanceProviderProps=PropsWithChildren<{}>
+
 export const PerformanceProvider:React.FC<PerformanceProviderProps>=({children})=>{
      const [allMetrics,setAllMetrics]=useState<IAllComponentMetrics>({});
      const [currentMemoryMetrics,setCurrentMemoryMetrics]=useState<IMemoryMetrics|null>(null)
@@ -37,31 +49,36 @@ export const PerformanceProvider:React.FC<PerformanceProviderProps>=({children})
      }, [ ])
      
     
-  const contextValue: IPerformanceContextValue = useMemo(() => {
-        return {
-            allMetrics,
-            addOrUpdateMetrics,
-            currentMemoryMetrics,
-            bundleMetrics,
-            updateMemoryMetrics
-        };
-    }, [allMetrics, addOrUpdateMetrics, currentMemoryMetrics, bundleMetrics, updateMemoryMetrics]);
+  const stateValue=useMemo(() => ({allMetrics,currentMemoryMetrics,bundleMetrics}), [allMetrics,currentMemoryMetrics,bundleMetrics])
+   const dispatchValue = useMemo(() => ({
+        addOrUpdateMetrics,
+        updateMemoryMetrics
+    }), [addOrUpdateMetrics, updateMemoryMetrics]);
      
     return(
-        <PerformanceContext.Provider value={contextValue}>
-            {children}
-        </PerformanceContext.Provider>
+        <PerformanceMetricsStateContext.Provider value={stateValue}>
+            <PerformanceMetricsDispatchContext.Provider value={dispatchValue}>
+                {children}
+            </PerformanceMetricsDispatchContext.Provider>
+        </PerformanceMetricsStateContext.Provider>
     )
 }
 
-export const usePerformanceContext = () =>{
-    const context=useContext(PerformanceContext);
+export const usePerformanceMetrics = () =>{
+    const context=useContext(PerformanceMetricsStateContext);
     if(context === undefined){
-        throw new Error('usePerformanceContext must be used within a PerformanceProvider')
+        throw new Error('usePerformanceMetrics must be used within a PerformanceProvider');
     }
     return context;
 }
 
+export const usePerformanceDispatch = () =>{
+    const context=useContext(PerformanceMetricsDispatchContext);
+    if(context === undefined){
+        throw new Error('usePerformanceDispatch must be used within a PerformanceProvider');
+    }
+    return context;
+}
     
     
     
