@@ -7,7 +7,7 @@ const PerformanceContext =createContext<IPerformanceContextValue|undefined>(unde
 type PerformanceProviderProps=PropsWithChildren<{}>
 export const PerformanceProvider:React.FC<PerformanceProviderProps>=({children})=>{
      const [allMetrics,setAllMetrics]=useState<IAllComponentMetrics>({});
-     const[currentMemoryMetrics,setCurrentMemoryMetrics]=useState<IMemoryMetrics|null>(null)
+     const [currentMemoryMetrics,setCurrentMemoryMetrics]=useState<IMemoryMetrics|null>(null)
      const [bundleMetrics,setBundleMetrics]= useState<IBundleMetrics |null>(null)
 
      //add new component and its metrics to the allcomponentmetrics
