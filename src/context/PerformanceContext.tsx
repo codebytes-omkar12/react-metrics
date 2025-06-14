@@ -1,6 +1,8 @@
-import { useContext,createContext,useState,useCallback,useEffect } from "react";
+import { useContext,createContext,useState,useCallback,useEffect,useMemo } from "react";
 import type {PropsWithChildren} from "react";
 import { type IAllComponentMetrics, type IPerformanceContextValue, type IMetrics, type IBundleMetrics, type IMemoryMetrics } from "../types/performance";
+
+
 
 const PerformanceContext =createContext<IPerformanceContextValue|undefined>(undefined);
 
@@ -34,14 +36,16 @@ export const PerformanceProvider:React.FC<PerformanceProviderProps>=({children})
      
      }, [ ])
      
-     
-    const contextValue:IPerformanceContextValue={
-        allMetrics,
-        addOrUpdateMetrics,
-        currentMemoryMetrics,
-        bundleMetrics,
-        updateMemoryMetrics
-    }
+    
+  const contextValue: IPerformanceContextValue = useMemo(() => {
+        return {
+            allMetrics,
+            addOrUpdateMetrics,
+            currentMemoryMetrics,
+            bundleMetrics,
+            updateMemoryMetrics
+        };
+    }, [allMetrics, addOrUpdateMetrics, currentMemoryMetrics, bundleMetrics, updateMemoryMetrics]);
      
     return(
         <PerformanceContext.Provider value={contextValue}>

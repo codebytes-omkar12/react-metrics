@@ -48,7 +48,7 @@ const PerformanceDashboard:React.FC=()=>{
         <h3 className="text-xl font-semibold text-gray-700 mb-3">Component render Metrics</h3>
         {Object.keys(allMetrics).length>0?(<table className="w-full border-collapse table-auto">
           <thead>
-            <tr className="bg-gray-200 text-black-800">
+            <tr className="bg-gray-200 text-red-800">
                 <th className="px-4 py-2 text-left border-b border-gray-300">Component</th>
                 <th className="px-4 py-2 text-left border-b border-gray-300">Renders</th>
                 <th className="px-4 py-2 text-left border-b border-gray-300">Last Render</th>
@@ -57,11 +57,11 @@ const PerformanceDashboard:React.FC=()=>{
           </thead>
           <tbody>
             {Object.entries(allMetrics).map(([componentName, metrics]) => (
-              <tr key={componentName} className="hover:bg-gray-100">
-                <td className="px-4 py-2 border-b border-gray-200 font-medium">{componentName}</td>
-                <td className="px-4 py-2 border-b border-gray-200 font-medium">{metrics.reRenders}</td>
-                <td className="px-4 py-2 border-b border-gray-200 font-medium">{metrics.lastRenderDuration?.toFixed(2)}</td>
-                <td className="px-4 py-2 border-b border-gray-200 text-sm text-gray-700">
+              <tr key={componentName} className="text-green-700">
+                <td className="px-4 py-2 border-b border-black font-medium">{componentName}</td>
+                <td className="px-4 py-2 border-b border-black font-medium">{metrics.reRenders}</td>
+                <td className="px-4 py-2 border-b border-black font-medium">{metrics.lastRenderDuration?.toFixed(2)}</td>
+                <td className="px-4 py-2 border-b border-black text-sm text-gray-700">
                 {
                  metrics.propsChanged && Object.keys(metrics.propsChanged).length>0?Object.entries(metrics.propsChanged).map(([propName,change])=>(`${propName} (from:${JSON.stringify(change.from)}, to: ${JSON.stringify(change.to)})`))
                  .join(','):'None'
