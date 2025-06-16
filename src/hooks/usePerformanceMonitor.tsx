@@ -34,6 +34,11 @@ export function usePerformanceMonitor(
     props: Record<string, any>,
     options?: { parentId?: string; componentPath?: string }
 ) {
+   //comments to check if the double invoking of strict mode was working or not.
+    // console.log("hallo");
+    // console.log("Naturlich");
+
+    
     const { parentId, componentPath } = options || {};
 
     const metricsRef = useRef<IMetrics>({
@@ -56,6 +61,9 @@ export function usePerformanceMonitor(
 
     const lastRenderTime = useRef<number>(performance.now()); // Time of the previous render completion
 
+   
+
+
     const { addOrUpdateMetrics } = usePerformanceDispatch(); // This is stable due to useCallback([])
 
     // This effect runs after every render where its dependencies change.
@@ -77,7 +85,7 @@ export function usePerformanceMonitor(
             mountTime: prevMetrics.mountTime === 0 ? currentRenderTimestamp : prevMetrics.mountTime, // Set mount time once
             lastRenderDuration: calculatedLastRenderDuration/1000,
             totalRenderDuration: prevMetrics.totalRenderDuration + calculatedLastRenderDuration,
-            reRenders: renderCountRef.current, // Total renders up to this point
+            reRenders: renderCountRef.current/2, // Total renders up to this point
             propsChanged: detectedPropChange,
             _prevProps: props, // Store current props for next comparison
             parentId: parentId,
