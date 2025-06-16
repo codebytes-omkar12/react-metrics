@@ -1,34 +1,47 @@
 import { useState} from "react"; // Ensure memo is imported
 import React from "react";
 import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
+import ChildComponent from "./ChildComponent";
 
 
-interface testProps {
-    id:number;
+interface TestComponentProps {
+    id:string;
+    displayName:string;
     someProp:string;
+    parentId?:string;
 }
 
 
-const TestComponent:React.FC<testProps>= ({id,someProp,...props})=>{
 
-    usePerformanceMonitor("testComponent",{id,someProp,...props});
-    const [clickCount, setClickCount] = useState<number>(0);
+const TestComponent:React.FC<TestComponentProps>= ({ id, displayName, someProp, parentId }: TestComponentProps) => {
+  
+    const [clickCount, setClickCount] = useState(0);
+    const metrics = usePerformanceMonitor(id, "Parent Component", { id, displayName, someProp,clickCount,parentId }, parentId);
+//   console.log(metrics.displayName)
+    const handleClick = () => {
+        setClickCount(prev => prev + 1);
+    };
 
-    const handleClick=()=>{
-        setClickCount(prev=>prev+1);
-    }
-
-    return(
-        <div className="p-4 border border-blue-300 rounded-md bg-blue-50 mb-4 text-center">
-            <h4 className="text-lg font-semibold text-blue-800">Monitored Component: {id}</h4>
-            <p className="text-gray-700">Prop `someProp`: "{someProp}"</p>
-            <p className="text-gray-700">Internal Count: {clickCount}</p>
+    return (
+       <div className="border w-full border-blue-300 p-6 m-4 rounded-lg bg-blue-50 shadow-md flex flex-col items-center space-y-4
+                    flex-1 min-w-[300px] max-w-sm sm:max-w-md lg:max-w-[48%]"> 
+            <h2 className="text-2xl font-bold text-blue-800">
+                {metrics.displayName} <span className="text-base text-gray-500">(ID: {metrics.id})</span>
+            </h2>
+            <p className="text-gray-700">Internal State (Click Count): <span className="font-semibold">{clickCount}</span></p>
+            <p className="text-gray-700">Prop (someProp): <span className="font-semibold">{someProp}</span></p>
             <button
                 onClick={handleClick}
-                className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 transform hover:-translate-y-0.5"
             >
-                Increment Count (Triggers Re-render)
+               {`Increment ${metrics.displayName} State`} 
             </button>
+
+            <ChildComponent
+                id={`${id}-child`}
+                parentId={id}
+                someProp={someProp}
+            />
         </div>
     )
 }; 

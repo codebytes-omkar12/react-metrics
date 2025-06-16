@@ -6,7 +6,8 @@ export interface IMetrics{
   propsChanged:Record<string,IPropChange>;
   _prevProps?:Record<string,any> | undefined
   parentId?:string;
-  componentPath?: string;
+  id:string;
+  displayName:string;
 }
 
 export interface IPropChange{
@@ -17,13 +18,6 @@ export interface IPropChange{
 export type IAllComponentMetrics = Record<string,IMetrics>;
 
 
-// export interface IPerformanceContextValue{
-//     allMetrics:IAllComponentMetrics;
-//     addOrUpdateMetrics:(componentName:string,metrics:IMetrics)=>void;
-//     currentMemoryMetrics:IMemoryMetrics | null;
-//     bundleMetrics:IBundleMetrics | null;
-//     updateMemoryMetrics:(metrics:IMemoryMetrics|null)=>void;
-// }
 
 export interface IBundleMetrics {
   totalSizeKB:number;
@@ -34,5 +28,11 @@ export interface IMemoryMetrics{
   totalJSHeapSize:number;
   usedJSHeapSize:number;
   timestamp:number;
+}
+
+export interface IHierarchyNode extends IMetrics{
+  componentPath:string;
+  children:IHierarchyNode[];
+
 }
   

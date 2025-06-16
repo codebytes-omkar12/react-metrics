@@ -30,16 +30,17 @@ const findPropChanges = (oldProps: Record<string, any> | undefined, newProps: Re
 }
 
 export function usePerformanceMonitor(
-    componentName: string,
+    componentId:string,
+    displayName:string,
     props: Record<string, any>,
-    options?: { parentId?: string; componentPath?: string }
+     parentId?: string,
 ) {
    //comments to check if the double invoking of strict mode was working or not.
     // console.log("hallo");
     // console.log("Naturlich");
 
     
-    const { parentId, componentPath } = options || {};
+ 
 
     const metricsRef = useRef<IMetrics>({
         mountTime: 0,
@@ -49,7 +50,8 @@ export function usePerformanceMonitor(
         propsChanged: {},
         _prevProps: undefined, // Will store the props from the *previous* render
         parentId: parentId,
-        componentPath: componentPath
+        id:componentId,
+        displayName:displayName
     });
 
     // This ref tracks the total number of times the component has rendered.
@@ -88,22 +90,25 @@ export function usePerformanceMonitor(
             reRenders: renderCountRef.current/2, // Total renders up to this point
             propsChanged: detectedPropChange,
             _prevProps: props, // Store current props for next comparison
-            parentId: parentId,
-            componentPath: componentPath
+           
         };
 
         metricsRef.current = updatedMetrics; // Update the ref with the new metrics
         lastRenderTime.current = currentRenderTimestamp; // Update for the next render cycle
 
         // Report the updated metrics to the global context
-        addOrUpdateMetrics(componentName, metricsRef.current);
+        addOrUpdateMetrics(componentId, metricsRef.current);
 
         // Optional cleanup on unmount
         return () => {
             // If you want to remove the component's metrics when it unmounts
             // You'd need another dispatch function like removeMetrics(componentName)
         };
-    }, [props, parentId, componentPath, componentName, addOrUpdateMetrics]); // Effect dependencies
+    }, [props,
+        componentId,
+        displayName,
+        parentId,
+        addOrUpdateMetrics]); // Effect dependencies
 
     return metricsRef.current; // Return the current state of metrics
 }

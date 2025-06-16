@@ -1,6 +1,5 @@
 import { usePerformanceMetrics} from "../context/PerformanceContext";
-import { useEffect} from "react";
-import React from "react";
+import React from 'react';
 import { useMemoryMonitor } from "../hooks/useMemoryMonitor";
 
 function bytesToMB(bytes: number) {
@@ -15,12 +14,6 @@ const PerformanceDashboard:React.FC=()=>{
    //  console.log("isMemoryMonitoringAvailable from useMemoryMonitor:", isMemoryMonitoringAvailable);
    //  console.log("currentMemoryMetrics from context:", currentMemoryMetrics);
      
-   
-   useEffect(()=>{
-      
-         // console.log("Memory Metrics",currentMemoryMetrics);
-         // console.log("All Component Metrics",allMetrics);
-   },[currentMemoryMetrics,allMetrics])
     return(
     <div className="p-5 font-sans border border-gray-300 rounded-lg max-w-4xl mx-auto my-5 shadow-lg bg-white">
       <h2 className="text-3xl font-bold text-gray-800 text-center mb-6">Performance Dashboard</h2>
