@@ -1,6 +1,6 @@
 import{useRef,useEffect} from 'react'
 import type{ IMemoryMetrics } from '../types/performance'
-import { usePerformanceContext } from '../context/PerformanceContext'
+import { usePerformanceDispatch } from '../context/PerformanceContext'
 
 
 export function useMemoryMonitor(options?:{intervalMs:number}){
@@ -10,7 +10,7 @@ export function useMemoryMonitor(options?:{intervalMs:number}){
     const intervalRef=useRef<number>(0);
     const isApiAvaialbleRef=useRef<boolean>(true);
 
-    const {updateMemoryMetrics}=usePerformanceContext();
+    const {updateMemoryMetrics}=usePerformanceDispatch();
     // console.log(performance);
     
 

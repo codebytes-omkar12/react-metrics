@@ -1,4 +1,4 @@
-import { usePerformanceContext} from "../context/PerformanceContext";
+import { usePerformanceMetrics} from "../context/PerformanceContext";
 import { useEffect} from "react";
 import React from "react";
 import { useMemoryMonitor } from "../hooks/useMemoryMonitor";
@@ -10,7 +10,7 @@ function bytesToMB(bytes: number) {
 const PerformanceDashboard:React.FC=()=>{
 
    const isMemoryMonitoringAvailable=useMemoryMonitor({intervalMs:1000})
-   const {allMetrics,currentMemoryMetrics,bundleMetrics}=usePerformanceContext();
+   const {allMetrics,currentMemoryMetrics,bundleMetrics}=usePerformanceMetrics();
    //  console.log("PerformanceDashboard is rendering.");
    //  console.log("isMemoryMonitoringAvailable from useMemoryMonitor:", isMemoryMonitoringAvailable);
    //  console.log("currentMemoryMetrics from context:", currentMemoryMetrics);
@@ -60,7 +60,7 @@ const PerformanceDashboard:React.FC=()=>{
               <tr key={componentName} className="text-green-700">
                 <td className="px-4 py-2 border-b border-black font-medium">{componentName}</td>
                 <td className="px-4 py-2 border-b border-black font-medium">{metrics.reRenders}</td>
-                <td className="px-4 py-2 border-b border-black font-medium">{metrics.lastRenderDuration?.toFixed(2)}</td>
+                <td className="px-4 py-2 border-b border-black font-medium">{metrics.lastRenderDuration?.toFixed(2)} milliseconds</td>
                 <td className="px-4 py-2 border-b border-black text-sm text-gray-700">
                 {
                  metrics.propsChanged && Object.keys(metrics.propsChanged).length>0?Object.entries(metrics.propsChanged).map(([propName,change])=>(`${propName} (from:${JSON.stringify(change.from)}, to: ${JSON.stringify(change.to)})`))

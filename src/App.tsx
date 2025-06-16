@@ -1,7 +1,7 @@
 import './App.css'
 import PerformanceDashboard from './components/PerformanceDashBoard'
 import { PerformanceProvider } from './context/PerformanceContext'
-import TestComponent from './components/testComponent'
+import TestComponent from './components/TestComponent'
 import { useState } from 'react'
 
 
@@ -28,7 +28,7 @@ function App() {
       
         <TestComponent id={1} someProp={dynamicPropValue} />
 
-        <TestComponent id={2} someProp="static prop value" />
+        {/* <TestComponent id={2} someProp="static prop value" /> */}
 
       <PerformanceDashboard/>
        

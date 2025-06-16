@@ -1,4 +1,4 @@
-import { useState, memo } from "react"; // Ensure memo is imported
+import { useState} from "react"; // Ensure memo is imported
 import React from "react";
 import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
 
@@ -8,8 +8,8 @@ interface testProps {
     someProp:string;
 }
 
-// Apply React.memo here
-const TestComponent:React.FC<testProps>= memo(({id,someProp,...props})=>{
+
+const TestComponent:React.FC<testProps>= ({id,someProp,...props})=>{
 
     usePerformanceMonitor("testComponent",{id,someProp,...props});
     const [clickCount, setClickCount] = useState<number>(0);
@@ -31,6 +31,6 @@ const TestComponent:React.FC<testProps>= memo(({id,someProp,...props})=>{
             </button>
         </div>
     )
-}); // <- Add the closing parenthesis and semicolon for memo
+}; 
 
 export default TestComponent;

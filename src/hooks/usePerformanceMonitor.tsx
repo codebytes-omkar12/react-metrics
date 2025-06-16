@@ -50,7 +50,9 @@ export function usePerformanceMonitor(
     // This ref tracks the total number of times the component has rendered.
     // It's incremented on every execution of the hook function.
     const renderCountRef = useRef(0);
-    renderCountRef.current += 1; // Increment on every render of the component using this hook
+    renderCountRef.current += 1; 
+    
+    // Increment on every render of the component using this hook
 
     const lastRenderTime = useRef<number>(performance.now()); // Time of the previous render completion
 
@@ -73,7 +75,7 @@ export function usePerformanceMonitor(
         const updatedMetrics: IMetrics = {
             ...prevMetrics,
             mountTime: prevMetrics.mountTime === 0 ? currentRenderTimestamp : prevMetrics.mountTime, // Set mount time once
-            lastRenderDuration: calculatedLastRenderDuration,
+            lastRenderDuration: calculatedLastRenderDuration/1000,
             totalRenderDuration: prevMetrics.totalRenderDuration + calculatedLastRenderDuration,
             reRenders: renderCountRef.current, // Total renders up to this point
             propsChanged: detectedPropChange,
