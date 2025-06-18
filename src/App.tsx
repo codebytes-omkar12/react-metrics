@@ -3,6 +3,7 @@ import PerformanceDashboard from './components/PerformanceDashBoard'
 import { PerformanceProvider } from './context/PerformanceContext'
 import TestComponent from './components/TestComponent'
 import { useState } from 'react'
+import { usePerformanceMonitor } from './hooks/usePerformanceMonitor'
 
 
 function App() {
@@ -13,10 +14,10 @@ function App() {
     const handleDynamicProp=()=>{
       setDynamicPropvalue(new Date().toLocaleTimeString());
     }
-
+usePerformanceMonitor("App", "Application Root", {dynamicPropValue}, undefined);
   return (
      <PerformanceProvider>
-      <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-white py-8">
+      <div className="min-h-screen flex flex-auto items-center justify-center bg-gradient-to-br from-gray-50 to-white py-8">
         <div className="container w-full mx-auto p-8 bg-white rounded-xl shadow-2xl">
           <h1 className="text-center text-4xl font-extrabold text-gray-800 mb-8 pb-4 border-b-4 border-gray-200">
             Performance Monitoring Dashboard
@@ -51,6 +52,7 @@ function App() {
 
         
           <PerformanceDashboard />
+          
         </div>
       </div>
     </PerformanceProvider>

@@ -10,6 +10,7 @@ interface HierarchyNodeProps {
     onSelectComponent: (id: string) => void;
     isExpanded: boolean;
     onToggleExpand: (id: string) => void;
+    expandedNodes: Set<string>;
 }
 
 const ComponentHierarchyNode: React.FC<HierarchyNodeProps> = ({
@@ -18,7 +19,12 @@ const ComponentHierarchyNode: React.FC<HierarchyNodeProps> = ({
     onSelectComponent,
     isExpanded,
     onToggleExpand,
+    expandedNodes
 }) => {
+    if (!node) {
+        console.error("ComponentHierarchyNode received an undefined node prop.");
+        return null; // Don't render anything if node is invalid
+    }
     const isSelected = node.id === selectedComponentId;
     const hasChildren = node.children.length > 0;
 
@@ -62,6 +68,7 @@ const ComponentHierarchyNode: React.FC<HierarchyNodeProps> = ({
                             onSelectComponent={onSelectComponent}
                             isExpanded={isExpanded} // This is passed down, but child manages its own state from expandedNodes
                             onToggleExpand={onToggleExpand}
+                            expandedNodes={expandedNodes}
                         />
                     ))}
                 </ul>

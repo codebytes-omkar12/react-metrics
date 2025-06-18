@@ -101,8 +101,7 @@ export function usePerformanceMonitor(
 
         // Optional cleanup on unmount
         return () => {
-            // If you want to remove the component's metrics when it unmounts
-            // You'd need another dispatch function like removeMetrics(componentName)
+            
         };
     }, [props,
         componentId,
