@@ -1,22 +1,24 @@
 import React, { useState} from "react";
-
+import PerformanceCharts from "./PerformanceCharts";
 import { usePerformanceMetrics } from "../context/PerformanceContext";
-
+import { useMemoryMonitor } from "../hooks/useMemoryMonitor";
 
 import SelectedComponentDetails from "./SelectedDetailComponent";
 import MemoryComponent from "./MemoryComponent";
 import ComponentHierarchyTree from "./ComponentHierarchyTree";
 import { useBuildHierarchyTree } from "../utils/useBuildHierarchyTree";
 const PerformanceDashboard: React.FC = () => {
-  const { allMetrics } = usePerformanceMetrics();
+  const { allMetrics ,currentMemoryMetrics} = usePerformanceMetrics();
 
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(
     null
   );
 
   const buildHierarchyTree=useBuildHierarchyTree(allMetrics);
+  const isMemoryMonitoringAvailable=useMemoryMonitor({intervalMs:1000})
 
   return (
+    <div>
     <div className="flex flex-auto lg:flex-row gap-6 p-6 bg-white rounded-xl shadow-lg border border-gray-100">
       {/* The Left Panel: Node Tree */}
 
@@ -41,6 +43,8 @@ const PerformanceDashboard: React.FC = () => {
           <MemoryComponent />
         </div>
       </div>
+    </div>
+    <PerformanceCharts allMetrics={allMetrics} currentMemoryMetrics={currentMemoryMetrics} isMemoryMonitoringAvailable={isMemoryMonitoringAvailable}/>
     </div>
   );
 };

@@ -1,12 +1,15 @@
 import './App.css'
 import PerformanceDashboard from './components/PerformanceDashBoard'
-import { PerformanceProvider } from './context/PerformanceContext'
+import { PerformanceProvider} from './context/PerformanceContext'
 import TestComponent from './components/TestComponent'
 import { useState } from 'react'
 import { usePerformanceMonitor } from './hooks/usePerformanceMonitor'
 
 
+
+
 function App() {
+
   
     // console.log((performance?.memory as any));
     const[dynamicPropValue,setDynamicPropvalue]=useState("initial dynamic prop");
@@ -54,6 +57,7 @@ usePerformanceMonitor("App", "Application Root", {dynamicPropValue}, undefined);
           <PerformanceDashboard />
           
         </div>
+       
       </div>
     </PerformanceProvider>
   )
