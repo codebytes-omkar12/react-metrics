@@ -4,11 +4,14 @@ import { PerformanceProvider} from './context/PerformanceContext'
 import TestComponent from './components/TestComponent'
 import { useState } from 'react'
 import { usePerformanceMonitor } from './hooks/usePerformanceMonitor'
+import withPerformanceMonitor from './HOC/withPerformanceMonitor'
 
 
 
 
 function App() {
+
+  const MonitoredPerformanceDashboard = withPerformanceMonitor(PerformanceDashboard, {id:'Performance DashBoard', displayName:"Performance DashBoard",parentId:"App"});
 
   
     // console.log((performance?.memory as any));
@@ -34,9 +37,7 @@ usePerformanceMonitor("App", "Application Root", {dynamicPropValue}, undefined);
               Increment Global Prop
             </button>
           </div>
-
           <div className="flex flex-wrap justify-center gap-6 mb-10 p-6 bg-gray-50 rounded-xl shadow-inner">
-  
             <TestComponent
               id="testComp1"
               displayName="TestComponent A"
@@ -50,14 +51,9 @@ usePerformanceMonitor("App", "Application Root", {dynamicPropValue}, undefined);
               parentId="App"
             />
           </div>
-
           <hr className="my-10 border-t-2 border-gray-300 w-full" />
-
-        
-          <PerformanceDashboard />
-          
+          <MonitoredPerformanceDashboard/>
         </div>
-       
       </div>
     </PerformanceProvider>
   )

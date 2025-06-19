@@ -40,11 +40,13 @@ export function usePerformanceMonitor(
     // console.log("Naturlich");
 
     
- 
-
+  const lastRenderTime = useRef<number>(performance.now());  
+   const renderCountRef = useRef(0);
+    renderCountRef.current += 1;
+   
     const metricsRef = useRef<IMetrics>({
         mountTime: 0,
-        lastRenderDuration: 0,
+        lastRenderDuration:0,
         totalRenderDuration: 0,
         reRenders: 0,
         propsChanged: {},
@@ -56,12 +58,11 @@ export function usePerformanceMonitor(
 
     // This ref tracks the total number of times the component has rendered.
     // It's incremented on every execution of the hook function.
-    const renderCountRef = useRef(0);
-    renderCountRef.current += 1; 
+    
     
     // Increment on every render of the component using this hook
 
-    const lastRenderTime = useRef<number>(performance.now()); // Time of the previous render completion
+     // Time of the previous render completion
 
    
 

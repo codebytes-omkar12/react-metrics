@@ -1,8 +1,7 @@
 // E:\react-metrics\src\components\ComponentHierarchyTree.tsx
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { usePerformanceMetrics } from '../context/PerformanceContext'; // Still needs to access allMetrics
-import { type IHierarchyNode } from '../types/performance';
 import ComponentHierarchyNode from './ComponentHierarchyNode'; // Needs ComponentHierarchyNode
 import { useBuildHierarchyTree } from '../utils/useBuildHierarchyTree';
 

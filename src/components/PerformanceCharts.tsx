@@ -43,7 +43,7 @@ const PerformanceCharts: React.FC<PerformanceChartProps> = ({
 
     const componentChartData= useMemo(()=>{
         return Object.values(allMetrics)
-        .filter(metric=>metric.displayName !=='Application Root' && metric.reRenders > 0)
+        .filter(metric=>metric.displayName !=='Application Root' && metric.reRenders > 0) //To FIlter out the root node because it's data will overshadow rest of the data
         .sort((a,b)=>b.reRenders-a.reRenders)
         .map(metric=>({
             name:metric.id,
@@ -100,7 +100,7 @@ const PerformanceCharts: React.FC<PerformanceChartProps> = ({
                         <LineChart data={memoryHistory} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                             <XAxis dataKey="timestamp" tickFormatter={formatTimeStamp} interval="preserveStartEnd" style={{ fontSize: '10px' }} />
-                            <YAxis label={{ value: 'MB', angle: -90, position: 'insideLeft' }}
+                            <YAxis   label={{ value: 'MB', angle: -90, position: 'insideLeft' }}
                                 tickFormatter={(value) => bytesToMB(value)} /> {/* Use the formatted helper */}
                             <Tooltip formatter={(value: number) => [`${bytesToMB(value)}`, 'Memory']}
                                 labelFormatter={formatTimeStamp} />
