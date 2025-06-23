@@ -3,6 +3,10 @@ import { useRef, useEffect } from "react";
 import { type IMetrics, type IPropChange } from "../types/performance";
 import { usePerformanceDispatch } from '../context/PerformanceContext';
 
+
+
+
+
 const findPropChanges = (oldProps: Record<string, any> | undefined, newProps: Record<string, any>): Record<string, IPropChange> => {
     const changes: Record<string, IPropChange> = {};
     if (!oldProps) {
@@ -69,6 +73,10 @@ export function usePerformanceMonitor(
 
     const { addOrUpdateMetrics } = usePerformanceDispatch(); // This is stable due to useCallback([])
 
+   
+
+
+
     // This effect runs after every render where its dependencies change.
     useEffect(() => {
         const prevMetrics = metricsRef.current;
@@ -97,8 +105,36 @@ export function usePerformanceMonitor(
         metricsRef.current = updatedMetrics; // Update the ref with the new metrics
         lastRenderTime.current = currentRenderTimestamp; // Update for the next render cycle
 
+        const shallowPropsChanged = (prev: Record<string, any> = {}, next: Record<string, any>) => {
+           const keys = new Set([...Object.keys(prev), ...Object.keys(next)]);
+            for (const key of keys) {
+                const a = prev[key];
+                const b = next[key];
+                
+                if (typeof a === 'function' || typeof b === 'function') continue; // Skip functions
+                if (a !== b) return true;
+            }
+            return false;
+            };
+
+        const hasChanges =
+  shallowPropsChanged(prevMetrics._prevProps, props) ||
+  prevMetrics.lastRenderDuration !== updatedMetrics.lastRenderDuration;
+  const hasRealChange =
+  Object.keys(detectedPropChange).length > 0 ||
+  updatedMetrics.lastRenderDuration !== prevMetrics.lastRenderDuration ||
+  updatedMetrics.reRenders !== prevMetrics.reRenders;
+
+if (hasRealChange&&hasChanges) {
+    setTimeout(() => {
+        addOrUpdateMetrics(componentId, updatedMetrics);
+    }, 300 );
+  
+}
+
         // Report the updated metrics to the global context
-        addOrUpdateMetrics(componentId, metricsRef.current);
+
+        
 
         // Optional cleanup on unmount
         return () => {

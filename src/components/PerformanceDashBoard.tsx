@@ -7,6 +7,9 @@ import SelectedComponentDetails from "./SelectedDetailComponent";
 import MemoryComponent from "./MemoryComponent";
 import ComponentHierarchyTree from "./ComponentHierarchyTree";
 import { useBuildHierarchyTree } from "../utils/useBuildHierarchyTree";
+import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
+
+
 const PerformanceDashboard: React.FC = () => {
   const { allMetrics ,currentMemoryMetrics} = usePerformanceMetrics();
 
@@ -16,6 +19,12 @@ const PerformanceDashboard: React.FC = () => {
 
   const buildHierarchyTree=useBuildHierarchyTree(allMetrics);
   const isMemoryMonitoringAvailable=useMemoryMonitor({intervalMs:1000})
+  const MonitoredSelectedComponentDetails= withPerformanceMonitor(SelectedComponentDetails,{id: "SelectedComponentDetails",
+    displayName: "Component Details",
+    parentId: "Performance DashBoard",})
+   const MonitoredMemoryComponent=withPerformanceMonitor(MemoryComponent,{id:"MemoryComponent",displayName :"Memory Metrics",parentId:"Performance DashBoard"})
+  // const MonitoredPerformanceCharts=withPerformanceMonitor(PerformanceCharts,{id:"PerformanceChart",displayName:"PerformanceChart",parentId:"Performance DashBoard"})
+
 
   return (
     <div>
@@ -34,13 +43,13 @@ const PerformanceDashboard: React.FC = () => {
           {" "}
           {/* NEW CONTAINER for horizontal alignment */}
           {/* Selected Component Details */}
-          <SelectedComponentDetails
+          <MonitoredSelectedComponentDetails
             selectedComponentId={selectedComponentId}
             allMetrics={allMetrics}
             buildHierarchyTree={buildHierarchyTree}
           />
           {/* Memory and Bundle Metrics - Now beside Component Details */}
-          <MemoryComponent />
+          <MonitoredMemoryComponent />
         </div>
       </div>
     </div>

@@ -41,6 +41,8 @@ const PerformanceCharts: React.FC<PerformanceChartProps> = ({
     },[currentMemoryMetrics])
 
 
+
+
     const componentChartData= useMemo(()=>{
         return Object.values(allMetrics)
         .filter(metric=>metric.displayName !=='Application Root' && metric.reRenders > 0) //To FIlter out the root node because it's data will overshadow rest of the data
