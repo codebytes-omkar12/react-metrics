@@ -1,6 +1,6 @@
 import React from 'react'
 import { findPathInTree } from '../utils/findPathInTree'
-import { type IAllComponentMetrics, type IHierarchyNode, type IPropChange ,type IMetrics } from '../types/performance' 
+import { type IAllComponentMetrics, type IHierarchyNode, } from '../types/performance' 
 
 
 interface SelectedComponentDetailProps{
@@ -10,7 +10,7 @@ interface SelectedComponentDetailProps{
 }
 
 
-const SelectedComponentDetails:React.FC<SelectedComponentDetailProps> = ({selectedComponentId,allMetrics,buildHierarchyTree}) => {
+const SelectedComponentDetails:React.FC<SelectedComponentDetailProps> = React.memo(({selectedComponentId,allMetrics,buildHierarchyTree}) => {
     
      const selectedMetrics=selectedComponentId?allMetrics[selectedComponentId]:null
     return (
@@ -48,7 +48,7 @@ const SelectedComponentDetails:React.FC<SelectedComponentDetailProps> = ({select
             )}
         </div>
   )
-}
+})
 
 export default SelectedComponentDetails
 

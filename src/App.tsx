@@ -5,6 +5,8 @@ import TestComponent from './components/TestComponent'
 import { useState } from 'react'
 import { usePerformanceMonitor } from './hooks/usePerformanceMonitor'
 import withPerformanceMonitor from './HOC/withPerformanceMonitor'
+import HookAnalysisDashboard from './components/HookAnalysisDashboard'
+import ErrorBoundary from './components/ErrorBoundary'
 
 
 
@@ -15,13 +17,13 @@ function App() {
 
 
   // console.log((performance?.memory as any));
-  const [dynamicPropValue, setDynamicPropvalue] = useState("initial dynamic prop");
+  const [dynamicPropValue, setDynamicPropvalue] =/*Global Prop*/ useState("initial dynamic prop");
 
   const handleDynamicProp = () => {
     setDynamicPropvalue(new Date().toLocaleTimeString());
   }
-  usePerformanceMonitor("App", "Application Root", { dynamicPropValue }, undefined);
-  return (
+  /*To Extract The Metrics Data*/usePerformanceMonitor("App", "Application Root", { dynamicPropValue }, undefined);
+  return (<ErrorBoundary fallback={<div>Fatal Error</div>}>
     <PerformanceProvider>
       <div className="min-h-screen flex flex-auto items-center justify-center bg-gradient-to-br from-gray-50 to-white py-8">
         <div className="container w-full mx-auto p-8 bg-white rounded-xl shadow-2xl">
@@ -53,9 +55,11 @@ function App() {
           </div>
           <hr className="my-10 border-t-2 border-gray-300 w-full" />
           <MonitoredPerformanceDashboard />
+          <HookAnalysisDashboard/>
         </div>
       </div>
     </PerformanceProvider>
+    </ErrorBoundary>
   )
 }
 

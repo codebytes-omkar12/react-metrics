@@ -8,8 +8,8 @@ interface ChildComponentProps {
 }
 
 const ChildComponent = ({ id, parentId, someProp }: ChildComponentProps) => {
-    const [childCount, setChildCount] = useState(0);
-    const metrics = usePerformanceMonitor(id, "Child Component", { id, parentId, someProp ,childCount}, parentId);
+    const [childCount, setChildCount] =/*To Configure the internal count state of the component*/ useState(0);
+    const metrics =/*To extract the performance metrics*/ usePerformanceMonitor(id, "Child Component", { id, parentId, someProp ,childCount}, parentId);
 
     const incrementChild = () => setChildCount(prev => prev + 1);
 

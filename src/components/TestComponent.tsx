@@ -12,11 +12,11 @@ interface TestComponentProps {
 
 const TestComponent: React.FC<TestComponentProps> = ({ id, displayName, someProp, parentId }: TestComponentProps) => {
 
-    // Handles internal counter state
-    const [clickCount, setClickCount] = useState(0);
+ 
+    const [clickCount, setClickCount] = /*Handles Internal state*/useState(0);
 
     // Monitors component performance
-    const metrics = usePerformanceMonitor(
+    const metrics = /*Extract Metrics from the component*/usePerformanceMonitor(
         id,
         "Parent Component",
         { id, displayName, someProp, clickCount, parentId },

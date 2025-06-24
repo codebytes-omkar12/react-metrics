@@ -16,10 +16,10 @@ const ComponentHierarchyTree: React.FC<ComponentHierarchyTreeProps> = ({
     onSelectComponent,
 }) => {
     // State for expanded nodes is managed here now
-    const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+    const [expandedNodes, setExpandedNodes] = /*State Variable to Store Child Nodes Of Parent Node*/useState<Set<string>>(new Set());
 
     // Get allMetrics from context
-    const { allMetrics } = usePerformanceMetrics();
+    const { allMetrics } = /*Used to access the essential metrics data with the help of context */usePerformanceMetrics();
 
     // Callback to toggle expansion
     const handleToggleExpand = (id: string) => {
@@ -35,7 +35,7 @@ const ComponentHierarchyTree: React.FC<ComponentHierarchyTreeProps> = ({
     };
 
     // buildHierarchyTree logic (moved from PerformanceDashboard)
-    const buildHierarchyTree = useBuildHierarchyTree(allMetrics)
+    const buildHierarchyTree = /*Utility used to build the hierarchy tree by adding childNodes and Root Nodes in alphabetic order to respective array*/useBuildHierarchyTree(allMetrics)
     return (
         <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 flex-1 min-h-[250px]"> {/* Added flex-1 and min-h */}
             <h3 className='text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200'>

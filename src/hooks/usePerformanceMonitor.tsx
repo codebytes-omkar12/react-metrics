@@ -44,11 +44,11 @@ export function usePerformanceMonitor(
     // console.log("Naturlich");
 
     
-  const lastRenderTime = useRef<number>(performance.now());  
-   const renderCountRef = useRef(0);
+  const lastRenderTime = /*ref for measuring last reRender duration 0 for 1st Render*/useRef<number>(performance.now());  
+   const renderCountRef =/*ref for measuring last reRender Count 0 for 1st Render*/ useRef(0);
     renderCountRef.current += 1;
    
-    const metricsRef = useRef<IMetrics>({
+    const metricsRef =/*ref for storing metrics of the component*/ useRef<IMetrics>({
         mountTime: 0,
         lastRenderDuration:0,
         totalRenderDuration: 0,
@@ -71,7 +71,7 @@ export function usePerformanceMonitor(
    
 
 
-    const { addOrUpdateMetrics } = usePerformanceDispatch(); // This is stable due to useCallback([])
+    const { addOrUpdateMetrics } = /*Hook for using dispatch functions from context*/usePerformanceDispatch(); // This is stable due to useCallback([])
 
    
 
@@ -96,55 +96,46 @@ export function usePerformanceMonitor(
             mountTime: prevMetrics.mountTime === 0 ? currentRenderTimestamp : prevMetrics.mountTime, // Set mount time once
             lastRenderDuration: calculatedLastRenderDuration/1000,
             totalRenderDuration: prevMetrics.totalRenderDuration + calculatedLastRenderDuration,
-            reRenders: renderCountRef.current/2, // Total renders up to this point
+            reRenders: renderCountRef.current, // Use the actual render count, including initial render
             propsChanged: detectedPropChange,
             _prevProps: props, // Store current props for next comparison
-           
         };
 
         metricsRef.current = updatedMetrics; // Update the ref with the new metrics
         lastRenderTime.current = currentRenderTimestamp; // Update for the next render cycle
 
         const shallowPropsChanged = (prev: Record<string, any> = {}, next: Record<string, any>) => {
-           const keys = new Set([...Object.keys(prev), ...Object.keys(next)]);
+            const keys = new Set([...Object.keys(prev), ...Object.keys(next)]);
             for (const key of keys) {
                 const a = prev[key];
                 const b = next[key];
-                
                 if (typeof a === 'function' || typeof b === 'function') continue; // Skip functions
                 if (a !== b) return true;
             }
             return false;
-            };
+        };
 
         const hasChanges =
-  shallowPropsChanged(prevMetrics._prevProps, props) ||
-  prevMetrics.lastRenderDuration !== updatedMetrics.lastRenderDuration;
-  const hasRealChange =
-  Object.keys(detectedPropChange).length > 0 ||
-  updatedMetrics.lastRenderDuration !== prevMetrics.lastRenderDuration ||
-  updatedMetrics.reRenders !== prevMetrics.reRenders;
+            shallowPropsChanged(prevMetrics._prevProps, props) ||
+            prevMetrics.lastRenderDuration !== updatedMetrics.lastRenderDuration;
+        const hasRealChange =
+            Object.keys(detectedPropChange).length > 0 ||
+            updatedMetrics.lastRenderDuration !== prevMetrics.lastRenderDuration ||
+            updatedMetrics.reRenders !== prevMetrics.reRenders;
 
-if (hasRealChange&&hasChanges) {
-    setTimeout(() => {
-        addOrUpdateMetrics(componentId, updatedMetrics);
-    }, 300 );
-  
-}
+        let timeoutId: ReturnType<typeof setTimeout> | null = null;
+        if (hasRealChange && hasChanges) {
+            timeoutId = setTimeout(() => {
+                addOrUpdateMetrics(componentId, updatedMetrics);
+            }, 300 );
+        }
 
-        // Report the updated metrics to the global context
-
-        
-
-        // Optional cleanup on unmount
+        // Cleanup: clear the timeout if effect re-runs or unmounts
         return () => {
-            
+            if (timeoutId) clearTimeout(timeoutId);
+             renderCountRef.current--;
         };
-    }, [props,
-        componentId,
-        displayName,
-        parentId,
-        addOrUpdateMetrics]); // Effect dependencies
+    }, [props, componentId, displayName, parentId, addOrUpdateMetrics]); // Effect dependencies
 
     return metricsRef.current; // Return the current state of metrics
 }

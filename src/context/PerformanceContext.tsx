@@ -20,12 +20,12 @@ const PerformanceMetricsDispatchContext = createContext<IPerformanceMetricsDispa
 type PerformanceProviderProps=PropsWithChildren<{}>
 
 export const PerformanceProvider:React.FC<PerformanceProviderProps>=({children})=>{
-     const [allMetrics,setAllMetrics]=useState<IAllComponentMetrics>({});
-     const [currentMemoryMetrics,setCurrentMemoryMetrics]=useState<IMemoryMetrics|null>(null)
-     const [bundleMetrics,setBundleMetrics]= useState<IBundleMetrics |null>(null)
+     const [allMetrics,setAllMetrics]=/*State Variable to store and update allMetrics Data*/useState<IAllComponentMetrics>({});
+     const [currentMemoryMetrics,setCurrentMemoryMetrics]=/*State Variable to store and update currentMemoryMetrics Data*/useState<IMemoryMetrics|null>(null)
+     const [bundleMetrics,setBundleMetrics]=/*State Variable to store and update bundle memory Data*/useState<IBundleMetrics |null>(null)
 
-     //add new component and its metrics to the allcomponentmetrics
-     const addOrUpdateMetrics = useCallback(
+   
+     const addOrUpdateMetrics =/*memoizes the function used to add new component and its metrics to the allcomponentmetrics */useCallback(
         (componentName:string,metrics:IMetrics)=>{
             setAllMetrics(prev=>({
                 ...prev,
@@ -36,21 +36,21 @@ export const PerformanceProvider:React.FC<PerformanceProviderProps>=({children})
      ,[])
 
      //update the memory metrics
-     const updateMemoryMetrics= useCallback(
+     const updateMemoryMetrics=/*memoizes the function used to update the memory metrics of a component */ useCallback(
        (metrics:IMemoryMetrics|null) => {
         setCurrentMemoryMetrics(metrics)
        },
        [],
      )
 
-     useEffect(() => {
+     /*Hook To render the Bundle Memory*/useEffect(() => {
        setBundleMetrics({totalSizeKB:1234})
      
      }, [ ])
      
     
-  const stateValue=useMemo(() => ({allMetrics,currentMemoryMetrics,bundleMetrics}), [allMetrics,currentMemoryMetrics,bundleMetrics])
-   const dispatchValue = useMemo(() => ({
+  const stateValue=/*Hook To memoize the object containing metrics data*/useMemo(() => ({allMetrics,currentMemoryMetrics,bundleMetrics}), [allMetrics,currentMemoryMetrics,bundleMetrics])
+   const dispatchValue =/*Hook To memoize the dispatch functions*/ useMemo(() => ({
         addOrUpdateMetrics,
         updateMemoryMetrics
     }), [addOrUpdateMetrics, updateMemoryMetrics]);
@@ -65,7 +65,7 @@ export const PerformanceProvider:React.FC<PerformanceProviderProps>=({children})
 }
 
 export const usePerformanceMetrics = () =>{
-    const context=useContext(PerformanceMetricsStateContext);
+    const context=/*Hook to use the declared context for performance metrics*/useContext(PerformanceMetricsStateContext);
     if(context === undefined){
         throw new Error('usePerformanceMetrics must be used within a PerformanceProvider');
     }
@@ -73,7 +73,7 @@ export const usePerformanceMetrics = () =>{
 }
 
 export const usePerformanceDispatch = () =>{
-    const context=useContext(PerformanceMetricsDispatchContext);
+    const context=/*Hook to use the declared context for dispatch function cretae dinside the context*/useContext(PerformanceMetricsDispatchContext);
     if(context === undefined){
         throw new Error('usePerformanceDispatch must be used within a PerformanceProvider');
     }

@@ -6,8 +6,9 @@ const MemoryComponent: React.FC = () => {
     function bytesToMB(bytes: number) {
         return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
     }
-    const { bundleMetrics, currentMemoryMetrics } = usePerformanceMetrics();
-    const isMemoryMonitoringAvailable = useMemoryMonitor({ intervalMs: 1000 });
+    // console.log("memory");
+    const { bundleMetrics, currentMemoryMetrics } = /*Used to access the essential metrics data of different components of the app with the help of context */usePerformanceMetrics();
+    const isMemoryMonitoringAvailable =/*Used to access the essential heap memory data of this component*/ useMemoryMonitor({ intervalMs: 1000 });
     return (
         <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 flex-auto">
              

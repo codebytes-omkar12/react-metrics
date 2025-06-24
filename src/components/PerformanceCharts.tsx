@@ -21,14 +21,14 @@ const formatTimeStamp = (timeStamp: number) => {
     return `${(timeStamp / 1000).toFixed(2)}s`
 }
 
-const PerformanceCharts: React.FC<PerformanceChartProps> = ({
+const PerformanceCharts: React.FC<PerformanceChartProps> = React.memo(({
     allMetrics,
     currentMemoryMetrics, 
     isMemoryMonitoringAvailable
 }) => {
-    const [memoryHistory, setMemoryHistory] = useState<IMemoryMetrics[]>([])
-
-    useEffect(() => {
+    const [memoryHistory, setMemoryHistory] =/*Used to store the history of Heap Memory Data*/ useState<IMemoryMetrics[]>([])
+/*Hook To Update Memory History and restric the smaple to 60 instances*/
+useEffect(() => {
         if (currentMemoryMetrics) {
             setMemoryHistory(prev => {
                 const newHistory = [...prev, currentMemoryMetrics];
@@ -43,7 +43,7 @@ const PerformanceCharts: React.FC<PerformanceChartProps> = ({
 
 
 
-    const componentChartData= useMemo(()=>{
+    const componentChartData= /*Used To Memoize the function to store ComponentChartData to avoid unnecessary frequent reRennders*/useMemo(()=>{
         return Object.values(allMetrics)
         .filter(metric=>metric.displayName !=='Application Root' && metric.reRenders > 0) //To FIlter out the root node because it's data will overshadow rest of the data
         .sort((a,b)=>b.reRenders-a.reRenders)
@@ -120,6 +120,6 @@ const PerformanceCharts: React.FC<PerformanceChartProps> = ({
             </div>
         </div>
     )
-}
+})
 
 export default PerformanceCharts

@@ -7,11 +7,12 @@ import * as t from '@babel/types';
 interface HookDetail {
   name: string;
   line: number;
-  description?: string;
   importedFrom: string;
+  description?: string;
   numArgs: number;
   firstArgSummary?: string;
 }
+
 
 export function analyzeHooksInFile(code: string): {
   hooksUsed: string[];
@@ -52,24 +53,32 @@ export function analyzeHooksInFile(code: string): {
         hooksUsed.add(callee.name);
 
         const line = path.node.loc?.start.line ?? 0;
-        const importedFrom = importMap.get(callee.name) ?? 'unknown';
+        const importedFrom = importMap.get(callee.name) ?? 'Unknown';
 
-        const leadingComments = path.node.leadingComments;
+        // Get possible leading comment from current or parent node
+        const comments = path.node.leadingComments || path.parentPath.node.leadingComments || [];
         let description: string | undefined;
-        if (leadingComments && leadingComments.length > 0) {
-          const lastComment = leadingComments[leadingComments.length - 1];
-          description = lastComment.value.trim();
+        if (comments.length > 0) {
+          description = comments[comments.length - 1].value.trim();
         }
 
         const numArgs = path.node.arguments.length;
 
-        // Get first argument summary
+        // Simplify first argument if possible
         let firstArgSummary: string | undefined;
-        if (path.node.arguments[0]) {
-          const argNode = path.node.arguments[0];
-          firstArgSummary = code.slice(argNode.start!, argNode.end!);
-          if (firstArgSummary.length > 80) {
-            firstArgSummary = firstArgSummary.slice(0, 77) + '...';
+        const firstArg = path.node.arguments[0];
+        if (firstArg) {
+          if (t.isStringLiteral(firstArg)) {
+            firstArgSummary = `"${firstArg.value}"`;
+          } else if (t.isNumericLiteral(firstArg)) {
+            firstArgSummary = String(firstArg.value);
+          } else if (t.isIdentifier(firstArg)) {
+            firstArgSummary = firstArg.name;
+          } else {
+            firstArgSummary = code.slice(firstArg.start!, firstArg.end!);
+            if (firstArgSummary.length > 80) {
+              firstArgSummary = firstArgSummary.slice(0, 77) + '...';
+            }
           }
         }
 

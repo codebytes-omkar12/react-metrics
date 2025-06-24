@@ -11,15 +11,15 @@ import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
 
 
 const PerformanceDashboard: React.FC = () => {
-  const { allMetrics ,currentMemoryMetrics} = usePerformanceMetrics();
+  const { allMetrics ,currentMemoryMetrics} = /*Hook Used to access the metrics data of other component with the help of context*/usePerformanceMetrics();
 
-  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(
+  const [selectedComponentId, setSelectedComponentId] =/*State Variable to set and Update  the selected Component's ID*/useState<string | null>(
     null
   );
 
-  const buildHierarchyTree=useBuildHierarchyTree(allMetrics);
-  const isMemoryMonitoringAvailable=useMemoryMonitor({intervalMs:1000})
-  const MonitoredSelectedComponentDetails= withPerformanceMonitor(SelectedComponentDetails,{id: "SelectedComponentDetails",
+  const buildHierarchyTree=/*Hook To build a Hierarch tree from allMetrics data*/useBuildHierarchyTree(allMetrics);
+  const isMemoryMonitoringAvailable=/*Hook to extract the heap memory metrics from component returns true if heap memory data is available*/useMemoryMonitor({intervalMs:1000})
+  const MonitoredSelectedComponentDetails=withPerformanceMonitor(SelectedComponentDetails,{id: "SelectedComponentDetails",
     displayName: "Component Details",
     parentId: "Performance DashBoard",})
    const MonitoredMemoryComponent=withPerformanceMonitor(MemoryComponent,{id:"MemoryComponent",displayName :"Memory Metrics",parentId:"Performance DashBoard"})

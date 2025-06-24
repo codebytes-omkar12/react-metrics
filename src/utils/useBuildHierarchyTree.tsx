@@ -5,7 +5,7 @@ import { useMemo } from "react";
 export const useBuildHierarchyTree = (allMetrics:IAllComponentMetrics):IHierarchyNode[]=>{
 
 
-    return useMemo(() => {
+    return /*hook for memoizing build hierarchy tree util*/useMemo(() => {
         const nodes: Record<string, IHierarchyNode> = {};
     
         const rootNodes: IHierarchyNode[] = [];

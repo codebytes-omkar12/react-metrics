@@ -15,7 +15,7 @@ function withPerformanceMonitor<P extends Object>(WrappedComponent:React.Compone
 
     const WithPerformanceMonitorComponent:React.FC<P>=(props)=>{
         const{id,displayName,parentId}=monitorArgs;
-               usePerformanceMonitor(id,displayName || WrappedComponent.displayName|| WrappedComponent.name || 'UnknownComponent', props,parentId)
+             /*Hook used to extract the data of the components which are using this higher order component */usePerformanceMonitor(id,displayName || WrappedComponent.displayName|| WrappedComponent.name || 'UnknownComponent', props,parentId)
             return <WrappedComponent {...props}/>
 
     }

@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "CommonJS",
+    "module": "commonjs",
+    "esModuleInterop": true,        // ✅ Must be true
     "moduleResolution": "node",
-    "outDir": "dist",
-    "esModuleInterop": true,
     "strict": true,
+    "outDir": "dist",
     "types": ["node"],
     "resolveJsonModule": true
   },
-  "include": ["src/analyzer/**/*.ts", "Backend/**/*.ts"]
+  "include": ["Backend/*.ts"]
 }
