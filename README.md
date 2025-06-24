@@ -1,54 +1,71 @@
-# React + TypeScript + Vite
+# React Metrics
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, full-stack developer tool for analyzing React component performance, memory usage, and hook utilization. Built with React, Vite, TypeScript, Express, and TailwindCSS.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## Expanding the ESLint configuration
+- **Component Performance Dashboard:**
+  - Visualize re-renders, render durations, and memory usage of your React components in real time.
+  - Interactive component hierarchy tree with detailed metrics for each node.
+- **Hook Analysis:**
+  - Analyze and display all React hooks used in your codebase, including their arguments and descriptions.
+  - File picker and dashboard for per-file hook usage.
+- **Backend Analyzer:**
+  - Express server for static code analysis and file listing.
+  - Secure, production-ready setup with helmet, compression, CORS, and request logging.
+- **Production-Ready:**
+  - Strict TypeScript setup with project references and shared base config.
+  - Linting, formatting, and security best practices.
+  - Health check endpoint for monitoring and uptime checks.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Getting Started
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1. **Install dependencies:**
+   ```sh
+   npm install
+   ```
+2. **Start the backend analyzer:**
+   ```sh
+   npm run backend   # or: node Backend/analyzeHook.js
+   ```
+3. **Start the frontend app:**
+   ```sh
+   npm run dev
+   ```
+4. **Open your browser:**
+   - Visit [http://localhost:5173](http://localhost:5173) (or the port shown in your terminal)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## Project Structure
+
+- `src/` — React frontend (components, hooks, context, utils)
+- `Backend/` — Express backend for static analysis
+- `tsconfig.*.json` — TypeScript configs for each part of the project
+- `package.json` — Project dependencies and scripts
+
+---
+
+## Security & Monitoring
+
+- Uses `helmet`, `compression`, `morgan`, and `express-validator` for backend security and observability
+- Health check endpoint at `/health`
+- All dependencies are up-to-date and production-ready
+
+---
+
+## Contributing
+
+1. Fork this repo
+2. Create a feature branch
+3. Submit a pull request
+
+---
+
+## License
+
+MIT

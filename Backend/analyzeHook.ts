@@ -3,6 +3,9 @@ import cors from "cors"; // ✅ Add this
 import { analyzeHookUsageFromFile } from "../src/analyzer/hookAnalyzer"; // or wherever your analyzer lives
 import path from "path";
 import fs from 'fs';
+import helmet from "helmet";
+import compression from "compression"
+import morgan from "morgan";
 
 const app = express();
 const PORT = 5001;
@@ -22,8 +25,16 @@ function listAllTSXFiles(dir:string,basePath=''):string[]{
   return results;
 }
 
-app.use(cors()); // ✅ Allow all origins (default)
+app.use(cors()); 
 app.use(express.json());
+app.use(helmet());
+app.use(compression());
+app.use(morgan('dev'))
+
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 
 app.get('/list-files',(req,res)=>{
   const fileList=listAllTSXFiles(path.resolve('src'));
@@ -41,5 +52,11 @@ app.post('/analyze', (req, res) => {
     res.status(500).json({ error: 'failed to analyze file', details: error });
   }
 });
+
+const errMiddleware=(err,req,res,next)=>{
+  console.error(err);
+  res.status(500).json({error:'Internal Server Error'})
+}
+app.use(errMiddleware); // Pass the middleware function, not the result of calling it
 
 app.listen(PORT, () => console.log(`Analyzer running at http://localhost:${PORT}`));
