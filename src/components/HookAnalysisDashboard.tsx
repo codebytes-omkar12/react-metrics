@@ -25,6 +25,7 @@ export default function HookAnalysisDashboard() {
       body: JSON.stringify({ relativeFilePath: filePath }),
     });
 
+
     const data = await res.json();
     if (Array.isArray(data.hookDetails)) {
       setResult(data);

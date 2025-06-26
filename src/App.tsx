@@ -12,7 +12,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 
 
 function App() {
-
+    // const [aiSummary, setAiSummary] = useState<string | null>(null);
   const MonitoredPerformanceDashboard = withPerformanceMonitor(PerformanceDashboard, { id: 'Performance DashBoard', displayName: "Performance DashBoard", parentId: "App" });
 
 
@@ -57,6 +57,7 @@ function App() {
           <MonitoredPerformanceDashboard />
           <HookAnalysisDashboard/>
         </div>
+        
       </div>
     </PerformanceProvider>
     </ErrorBoundary>

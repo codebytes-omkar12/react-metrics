@@ -1,18 +1,56 @@
 import React from 'react'
 import { findPathInTree } from '../utils/findPathInTree'
 import { type IAllComponentMetrics, type IHierarchyNode, } from '../types/performance' 
+import { useState } from 'react'
+
 
 
 interface SelectedComponentDetailProps{
     selectedComponentId:string|null;
     allMetrics:IAllComponentMetrics;
     buildHierarchyTree:IHierarchyNode[]
+    setAiSummary: (summary: string | null) => void;
+    setLoadingSummary?: (loading: boolean) => void;
 }
 
 
-const SelectedComponentDetails:React.FC<SelectedComponentDetailProps> = React.memo(({selectedComponentId,allMetrics,buildHierarchyTree}) => {
+
+
+const SelectedComponentDetails:React.FC<SelectedComponentDetailProps> = React.memo(({selectedComponentId,allMetrics,buildHierarchyTree,setAiSummary,setLoadingSummary}) => {
+
+    const [loadingSummary, setLoadingSummaryLocal] = useState(false);
+    const selectedMetrics = selectedComponentId ? allMetrics[selectedComponentId] : null;
+
+    const handleGetAISummary = async () => {
+        console.log("clicked")
+      setLoadingSummary && setLoadingSummary(true);
+      setAiSummary(null);
+      // Scroll to the summary box immediately
+      document.getElementById('ai-summary-box')?.scrollIntoView({ behavior: 'smooth' });//DOM manipualtion
+      try {
+        const res = await fetch('http://localhost:5001/ai/summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            metrics: selectedMetrics // Only send metrics for now
+          }),
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error('AI summary fetch failed:', errorData);
+          setAiSummary('Failed to fetch AI summary: ' + (errorData.error || res.statusText));
+        } else {
+          const data = await res.json();
+          console.log('AI summary response:', data);
+          setAiSummary(data.summary);
+        }
+      } catch (err) {
+        console.error('AI summary fetch error:', err);
+        setAiSummary('Failed to fetch AI summary: ' + (err instanceof Error ? err.message : String(err)));
+      }
+      setLoadingSummary && setLoadingSummary(false);
+    };
     
-     const selectedMetrics=selectedComponentId?allMetrics[selectedComponentId]:null
     return (
      <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 flex-auto">
             <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">Component Details</h3>
@@ -42,6 +80,13 @@ const SelectedComponentDetails:React.FC<SelectedComponentDetailProps> = React.me
                     ) : (
                         <p className="text-gray-600">No prop changes detected in last render.</p>
                     )}
+                    <button
+                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+                        onClick={handleGetAISummary}
+                        disabled={loadingSummary}
+                    >
+                        {loadingSummary ? "Loading..." : "Get AI Summary"}
+                    </button>
                 </div>
             ) : (
                 <p className="text-gray-600 p-4 border border-dashed border-gray-300 rounded-md text-sm">Click on a component in the hierarchy to see its details.</p>

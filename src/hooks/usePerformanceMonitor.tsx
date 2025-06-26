@@ -43,13 +43,14 @@ export function usePerformanceMonitor(
     // console.log("hallo");
     // console.log("Naturlich");
 
-    
-  const lastRenderTime = /*ref for measuring last reRender duration 0 for 1st Render*/useRef<number>(performance.now());  
-   const renderCountRef =/*ref for measuring last reRender Count 0 for 1st Render*/ useRef(0);
+   
+    const mountStartTimeRef = /* Ref to record the time when the hook is first called (mount start)*/useRef<number>(performance.now());
+    const lastRenderTime = /*ref for measuring last reRender duration 0 for 1st Render*/useRef<number>(performance.now());  
+    const renderCountRef =/*ref for measuring last reRender Count 0 for 1st Render*/ useRef(0);
     renderCountRef.current += 1;
    
     const metricsRef =/*ref for storing metrics of the component*/ useRef<IMetrics>({
-        mountTime: 0,
+        mountTime: 0, // Will be set to mount duration (ms)
         lastRenderDuration:0,
         totalRenderDuration: 0,
         reRenders: 0,
@@ -90,10 +91,14 @@ export function usePerformanceMonitor(
 
         const detectedPropChange = findPropChanges(prevMetrics._prevProps, props);
 
+        // Calculate mount duration only on first render
+        const isFirstRender = prevMetrics.mountTime === 0;
+        const mountDuration = isFirstRender ? (currentRenderTimestamp - mountStartTimeRef.current) : prevMetrics.mountTime;
+
         // Update metrics object
         const updatedMetrics: IMetrics = {
             ...prevMetrics,
-            mountTime: prevMetrics.mountTime === 0 ? currentRenderTimestamp : prevMetrics.mountTime, // Set mount time once
+            mountTime: mountDuration, // Now represents mount duration in ms
             lastRenderDuration: calculatedLastRenderDuration/1000,
             totalRenderDuration: prevMetrics.totalRenderDuration + calculatedLastRenderDuration,
             reRenders: renderCountRef.current, // Use the actual render count, including initial render
