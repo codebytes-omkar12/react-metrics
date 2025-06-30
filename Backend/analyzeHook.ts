@@ -89,7 +89,7 @@ METRICS: ${JSON.stringify(metrics, null, 2)}
       contents:[{role:"user",parts:[{text:generatePrompt}]}],
       config:{
         temperature:0,
-        maxOutputTokens:500
+        maxOutputTokens:1000
       }
       
     });
