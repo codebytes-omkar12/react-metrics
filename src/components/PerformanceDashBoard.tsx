@@ -69,20 +69,33 @@ const PerformanceDashboard: React.FC = () => {
           <MonitoredMemoryComponent />
         </div>
       </div>
+      
     </div>
-    <PerformanceCharts allMetrics={allMetrics} currentMemoryMetrics={currentMemoryMetrics} isMemoryMonitoringAvailable={isMemoryMonitoringAvailable}/>
-     <div id="ai-summary-box" className="mt-8">
-      <label className="font-bold mb-2 block text-black">AI Summary</label>
+    {/* Improved AI Summary UI */}
+    {(loadingSummary || aiSummary) && (
       <div
-        className="text-left w-full max-w-7xl h-64 p-3 border rounded bg-gray-50 overflow-y-auto text-red-950"
-        style={{ whiteSpace: 'pre-wrap' }}
-        tabIndex={0}
+        id="ai-summary-box"
+        className="mt-10 flex justify-center w-full animate-fadein"
+        style={{ minHeight: '2rem' }}
       >
-        {loadingSummary
-          ? "Loading summary..."
-          : typewriterText || "No summary yet. Select a component and click 'Get AI Summary'."}
+        <div className="w-full max-w-2xl bg-white border border-blue-200 rounded-2xl shadow-lg p-6 transition-opacity duration-700 ease-in-out opacity-100">
+          <div className="flex items-center mb-3">
+            <span className="inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full mr-2 tracking-wide">AI Summary</span>
+          </div>
+          <div
+            className="text-left h-auto overflow-y-auto text-gray-800 text-base leading-relaxed flex items-center justify-center"
+            style={{ whiteSpace: 'pre-wrap', fontFamily: 'Inter, sans-serif' }}
+            tabIndex={0}
+          >
+            {loadingSummary
+              ? <span className="text-blue-500 font-semibold animate-pulse">Loading...</span>
+              : typewriterText || <span className="text-gray-400">No summary yet. Select a component and click 'Get AI Summary'.</span>}
+          </div>
+        </div>
       </div>
-    </div>
+    )}
+    <PerformanceCharts allMetrics={allMetrics} currentMemoryMetrics={currentMemoryMetrics} isMemoryMonitoringAvailable={isMemoryMonitoringAvailable}/>
+     
     </div>
   );
 };

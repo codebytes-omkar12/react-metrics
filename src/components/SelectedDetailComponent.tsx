@@ -1,7 +1,6 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import { findPathInTree } from '../utils/findPathInTree'
-import { type IAllComponentMetrics, type IHierarchyNode, } from '../types/performance' 
-import { useState } from 'react'
+import { type IAllComponentMetrics, type IHierarchyNode, } from '../types/performance'
 
 
 
@@ -13,13 +12,14 @@ interface SelectedComponentDetailProps{
     setLoadingSummary?: (loading: boolean) => void;
 }
 
+const SelectedComponentDetails: React.FC<SelectedComponentDetailProps> = React.memo(({selectedComponentId,allMetrics,buildHierarchyTree,setAiSummary,setLoadingSummary}) => {
 
+    // Memoize selectedMetrics to avoid unnecessary recalculation and re-renders
+    const selectedMetrics = useMemo(() => (
+        selectedComponentId ? allMetrics[selectedComponentId] : null
+    ), [selectedComponentId, allMetrics]);
 
-
-const SelectedComponentDetails:React.FC<SelectedComponentDetailProps> = React.memo(({selectedComponentId,allMetrics,buildHierarchyTree,setAiSummary,setLoadingSummary}) => {
-
-    const [loadingSummary, setLoadingSummaryLocal] = useState(false);
-    const selectedMetrics = selectedComponentId ? allMetrics[selectedComponentId] : null;
+    const [loadingSummary] = useState(false);
 
     const handleGetAISummary = async () => {
         console.log("clicked")

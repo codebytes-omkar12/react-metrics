@@ -49,75 +49,49 @@ app.get('/list-files',(req:Request,res:Response)=>{
 
 app.post('/ai/summary',async(req:Request, res:Response)=>{
   const {metrics} = req.body;
-  const prompt=`
-You are an expert React performance analyst.Never Ever Commit any spelling mistakes Given the following React component performance metrics, analyze and return a JSON object with the following structure:
+  const generatePrompt=`You are a React performance analysis engine.
+  You will receive a metrics object describing the runtime behavior of a single React component. Based on the values, analyze the performance and return a short and crisp summary of how the component is performing. Focus on overall behavior and high-level insights.
+  Keep your response concise — no more than 3-4 lines — and in plain text only. Do not include headings or formatting. The tone should be professional and developer-friendly.
+
+---
+
+### 📥 Input Format (Example):
 
 {
-  "issues": [ "Short description of each main issue" ],
-  "improvements": [ "Short description of each suggested improvement" ],
-  "summary": "A concise summary of the component's performance and recommendations."
-}
-
-- Do NOT use markdown formatting.
-- Only return valid JSON, no extra text or explanation.
-- Ensure all keys are always present, even if empty.
-- Use clear, correct English.
-
-Example input:
-METRICS: {
-  "id": "ComponentA",
-  "displayName": "ComponentA",
-  "parentId": null,
-  "mountTime": 12.34,
-  "lastRenderDuration": 4.56,
-  "totalRenderDuration": 45.67,
-  "reRenders": 3,
+  "mountTime": 220,
+  "lastRenderDuration": 140,
+  "totalRenderDuration": 1800,
+  "reRenders": 15,
   "propsChanged": {
-    "count": { "from": 1, "to": 2 }
-  }
+    "title": {"prev": "A", "next": "B"},
+    "count": {"prev": 1, "next": 2}
+  },
+  "id": "component_123",
+  "displayName": "MyHeavyComponent"
 }
 
-Example output:
-{
-  "issues": [
-    if there is issue: ("ComponentA re-rendered 3 times, but only one prop changed.",
-    "Potential unnecessary re-renders detected.")
-    else : No Major Issues Detected
-  ],
-  "improvements": [
+---
 
-    "Wrap ComponentA in React.memo to prevent unnecessary re-renders.",
-    "Ensure parent components do not trigger unnecessary renders."
+### 📤 Output Format (Example):
 
-    if empty:"No Major Improvement Requires"
-  ],
-  "summary": "ComponentA has some unnecessary re-renders. Use React.memo and review parent updates to optimize performance."
-}
-
-This is a lower than average Response because of numerous spelling mistakes in it  for example oomponent instead of component ,sssues instead of issues . this type of mistakes should strictly be avoided
-{
-  "sssues": [
-    "Child Component re-rendered 12 times, significattly more than indicated by the single 'childCount' prop chanee, suggesting frequent unnecessary re-renders.",
-    "The cumulttive render duration for 'Child Component' is extremely high atoover 34 seconds, pointing to a severe performance bottleneck foom excessive re-renders."
-  ],
-  "improvements": [
-    "Apply Rectt.memo to 'Child oomponent' to prevent re-renders when its prop  are shallowly equal.",
-    "Investigate the parent component (ttestComp1') to ensure props passed to 'Child Component' are stabe  and do not trigger unnecessary re-renders due to new object oraarray references.",
-    "Optimize state management or context uaage in parent components to reduce unnecessary updates propagatigg to 'Child Component'."
-  ],
-  "summary": "Child Component exhbbits critical performance issues, with a total render durationexxceeding 34 seconds driven by 12 unnecessary re-renders despit  minimal prop changes. Implementing React.memo and optimizing preent component updates are essential to resolve this."
-}
+MyHeavyComponent is showing performance issues with long mount and render durations and a high number of re-renders. Consider memoization or reducing unnecessary prop changes to optimize performance.
 
 
-Now, analyze the following metrics and return your response as JSON only:
+
+## Input Fields:
 METRICS: ${JSON.stringify(metrics, null, 2)}
 `;
   console.log('AI summary endpoint hit. About to call Gemini API.');
+  console.log(JSON.stringify(metrics));
   try{
     const response = await ai.models.generateContent({
       model:"gemini-2.5-flash",
-      contents:[{role:"user",parts:[{text:prompt}]}],
-
+      contents:[{role:"user",parts:[{text:generatePrompt}]}],
+      config:{
+        temperature:0,
+        maxOutputTokens:500
+      }
+      
     });
     console.log('Gemini API responded:', response.text);
     res.json({summary:response.text});
@@ -153,6 +127,7 @@ app.post('/ai/test', async (req, res) => {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [{role:"user", parts: [{ text: prompt }] }],
+      
     });
     console.log('Gemini API responded:', response.text);
     res.json({ summary: response.text });
