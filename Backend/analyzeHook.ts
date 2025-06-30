@@ -9,6 +9,7 @@ import morgan from "morgan";
 import { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import {GoogleGenAI} from "@google/genai"
+// import { correctSpelling } from "../src/utils/spellCheck"
 
 dotenv.config();
 const ai= new GoogleGenAI({apiKey:process.env.GEMINI_API_KEY !})
@@ -89,11 +90,11 @@ METRICS: ${JSON.stringify(metrics, null, 2)}
       contents:[{role:"user",parts:[{text:generatePrompt}]}],
       config:{
         temperature:0,
-        maxOutputTokens:1000
+        maxOutputTokens:10000
       }
-      
     });
-    console.log('Gemini API responded:', response.text);
+    
+    console.log('Gemini API responded:',response.text);
     res.json({summary:response.text});
   } catch(error){
     console.log('Gemini API error:', error)

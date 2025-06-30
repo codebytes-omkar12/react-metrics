@@ -7,13 +7,13 @@ import MemoryComponent from "./MemoryComponent";
 import ComponentHierarchyTree from "./ComponentHierarchyTree";
 import { useBuildHierarchyTree } from "../utils/useBuildHierarchyTree";
 import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
+import TypewriterComponent from "typewriter-effect";
 
 
 const PerformanceDashboard: React.FC = () => {
   const { allMetrics ,currentMemoryMetrics} = /*Hook Used to access the metrics data of other component with the help of context*/usePerformanceMetrics();
    const [aiSummary, setAiSummary] =/*state variable Used to store the API response*/useState<string | null>(null);
    const [loadingSummary, setLoadingSummary] =/*Boolean state variable tos set the loading phase*/  useState(false);
-   const [typewriterText, setTypewriterText] = useState<string>("");
    const [selectedComponentId, setSelectedComponentId] =/*State Variable to set and Update  the selected Component's ID*/useState<string | null>(null);
 
   const buildHierarchyTree=/*Hook To build a Hierarch tree from allMetrics data*/useBuildHierarchyTree(allMetrics);
@@ -26,20 +26,20 @@ const PerformanceDashboard: React.FC = () => {
 
 
   // Typewriter effect for aiSummary
-  useEffect(() => {
-    if (aiSummary && !loadingSummary) {
-      setTypewriterText("");
-      let i = 0;
-      const interval = setInterval(() => {
-        setTypewriterText((prev) => prev + aiSummary[i]);
-        i++;
-        if (i >= aiSummary.length) clearInterval(interval);
-      }, 15); // Adjust speed as needed
-      return () => clearInterval(interval);
-    } else if (loadingSummary) {
-      setTypewriterText("");
-    }
-  }, [aiSummary, loadingSummary]);
+  // useEffect(() => {
+  //   if (aiSummary && !loadingSummary) {
+  //     setTypewriterText("");
+  //     let i = 0;
+  //     const interval = setInterval(() => {
+  //       setTypewriterText((prev) => prev + aiSummary[i]);
+  //       i++;
+  //       if (i >= aiSummary.length) clearInterval(interval);
+  //     }, 15); // Adjust speed as needed
+  //     return () => clearInterval(interval);
+  //   } else if (loadingSummary) {
+  //     setTypewriterText("");
+  //   }
+  // }, [aiSummary, loadingSummary]);
 
   return (
     <div>
@@ -75,7 +75,7 @@ const PerformanceDashboard: React.FC = () => {
     {(loadingSummary || aiSummary) && (
       <div
         id="ai-summary-box"
-        className="mt-10 flex justify-center w-full animate-fadein"
+        className="mt-10 mb-10 flex justify-center w-full animate-fadein"
         style={{ minHeight: '2rem' }}
       >
         <div className="w-full max-w-2xl bg-white border border-blue-200 rounded-2xl shadow-lg p-6 transition-opacity duration-700 ease-in-out opacity-100">
@@ -89,7 +89,21 @@ const PerformanceDashboard: React.FC = () => {
           >
             {loadingSummary
               ? <span className="text-blue-500 font-semibold animate-pulse">Loading...</span>
-              : typewriterText || <span className="text-gray-400">No summary yet. Select a component and click 'Get AI Summary'.</span>}
+: aiSummary ? (
+  <TypewriterComponent
+     onInit={(typewriter) => {
+    typewriter
+      .typeString(aiSummary || "")
+      .start(); // no .deleteAll(), no loop
+  }}
+  options={{
+    delay: 25,
+    cursor: " ",
+  }}
+  />
+) : (
+  <span className="text-gray-400">No summary yet. Select a component and click 'Get AI Summary'.</span>
+)}
           </div>
         </div>
       </div>

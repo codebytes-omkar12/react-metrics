@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import { findPathInTree } from '../utils/findPathInTree'
 import { type IAllComponentMetrics, type IHierarchyNode, } from '../types/performance'
 
@@ -10,16 +10,15 @@ interface SelectedComponentDetailProps{
     buildHierarchyTree:IHierarchyNode[]
     setAiSummary: (summary: string | null) => void;
     setLoadingSummary?: (loading: boolean) => void;
+    loadingSummary?: boolean;
 }
 
-const SelectedComponentDetails: React.FC<SelectedComponentDetailProps> = React.memo(({selectedComponentId,allMetrics,buildHierarchyTree,setAiSummary,setLoadingSummary}) => {
+const SelectedComponentDetails: React.FC<SelectedComponentDetailProps> = React.memo(({selectedComponentId,allMetrics,buildHierarchyTree,setAiSummary,setLoadingSummary,loadingSummary}) => {
 
     // Memoize selectedMetrics to avoid unnecessary recalculation and re-renders
     const selectedMetrics = useMemo(() => (
         selectedComponentId ? allMetrics[selectedComponentId] : null
     ), [selectedComponentId, allMetrics]);
-
-    const [loadingSummary] = useState(false);
 
     const handleGetAISummary = async () => {
         console.log("clicked")
@@ -70,20 +69,20 @@ const SelectedComponentDetails: React.FC<SelectedComponentDetailProps> = React.m
 
                     <h4 className="text-lg font-semibold text-gray-700 mt-6 mb-3">Prop Changes:</h4>
                     {Object.keys(selectedMetrics.propsChanged).length > 0 ? (
-                        <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
+                        <p className="list-disc pl-5 space-y-1 text-sm text-gray-600">
                             {Object.entries(selectedMetrics.propsChanged).map(([propName, change]) => (
-                                <li key={propName}>
+                                <span key={propName}>
                                     <strong className="text-gray-700">{propName}:</strong> From `<span className="font-mono bg-gray-100 px-1 py-0.5 rounded text-xs">{String(change.from)}</span>` to `<span className="font-mono bg-gray-100 px-1 py-0.5 rounded text-xs">{String(change.to)}</span>`
-                                </li>
+                                </span>
                             ))}
-                        </ul>
+                        </p>
                     ) : (
                         <p className="text-gray-600">No prop changes detected in last render.</p>
                     )}
                     <button
                         className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
                         onClick={handleGetAISummary}
-                        disabled={loadingSummary}
+                        disabled={!!loadingSummary}
                     >
                         {loadingSummary ? "Loading..." : "Get AI Summary"}
                     </button>
