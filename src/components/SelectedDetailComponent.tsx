@@ -21,11 +21,20 @@ const SelectedComponentDetails: React.FC<SelectedComponentDetailProps> = React.m
     ), [selectedComponentId, allMetrics]);
 
     const handleGetAISummary = async () => {
-        console.log("clicked")
-      setLoadingSummary && setLoadingSummary(true);
+      setLoadingSummary && setLoadingSummary(true); // Always set loading on click
       setAiSummary(null);
+      if (!selectedComponentId) {
+        // Show loader and a message while waiting for selection
+        console.warn('No component selected, waiting for selection.');
+        return;
+      }
+      if (!selectedMetrics) {
+        // Show loader and a message while waiting for metrics
+        console.warn('No selectedMetrics, waiting for metrics to be available.');
+        return;
+      }
       // Scroll to the summary box immediately
-      document.getElementById('ai-summary-box')?.scrollIntoView({ behavior: 'smooth' });//DOM manipualtion
+      document.getElementById('ai-summary-box')?.scrollIntoView({ behavior: 'smooth' });
       try {
         const res = await fetch('http://localhost:5001/ai/summary', {
           method: 'POST',
@@ -49,6 +58,8 @@ const SelectedComponentDetails: React.FC<SelectedComponentDetailProps> = React.m
       }
       setLoadingSummary && setLoadingSummary(false);
     };
+    // console.log('selectedComponentId:', selectedComponentId, 'selectedMetrics:', selectedMetrics);
+
     
     return (
      <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 flex-auto">
@@ -81,10 +92,16 @@ const SelectedComponentDetails: React.FC<SelectedComponentDetailProps> = React.m
                     )}
                     <button
                         className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
-                        onClick={handleGetAISummary}
-                        disabled={!!loadingSummary}
+                        onClick={() => { setLoadingSummary && setLoadingSummary(true);console.log("clicked"); handleGetAISummary(); }}
+                        
                     >
-                        {loadingSummary ? "Loading..." : "Get AI Summary"}
+                        {loadingSummary
+                          ? (!selectedComponentId
+                              ? "Waiting for selection..."
+                              : !selectedMetrics
+                                ? "Waiting for metrics..."
+                                : "Loading...")
+                          : "Get AI Summary"}
                     </button>
                 </div>
             ) : (
@@ -92,7 +109,7 @@ const SelectedComponentDetails: React.FC<SelectedComponentDetailProps> = React.m
             )}
         </div>
   )
-})
+} )
 
 export default SelectedComponentDetails
 

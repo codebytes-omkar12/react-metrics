@@ -64,6 +64,7 @@ const PerformanceDashboard: React.FC = () => {
             buildHierarchyTree={buildHierarchyTree}
             setAiSummary={setAiSummary}
             setLoadingSummary={setLoadingSummary}
+            
           />
           {/* Memory and Bundle Metrics - Now beside Component Details */}
           <MonitoredMemoryComponent />
@@ -72,7 +73,7 @@ const PerformanceDashboard: React.FC = () => {
       
     </div>
     {/* Improved AI Summary UI */}
-    {(loadingSummary || aiSummary) && (
+    {loadingSummary && (
       <div
         id="ai-summary-box"
         className="mt-10 mb-10 flex justify-center w-full animate-fadein"
@@ -87,23 +88,37 @@ const PerformanceDashboard: React.FC = () => {
             style={{ whiteSpace: 'pre-wrap', fontFamily: 'Inter, sans-serif' }}
             tabIndex={0}
           >
-            {loadingSummary
-              ? <span className="text-blue-500 font-semibold animate-pulse">Loading...</span>
-: aiSummary ? (
-  <TypewriterComponent
-     onInit={(typewriter) => {
-    typewriter
-      .typeString(aiSummary || "")
-      .start(); // no .deleteAll(), no loop
-  }}
-  options={{
-    delay: 25,
-    cursor: " ",
-  }}
-  />
-) : (
-  <span className="text-gray-400">No summary yet. Select a component and click 'Get AI Summary'.</span>
-)}
+            <span className="text-blue-500 font-semibold animate-pulse">Loading...</span>
+          </div>
+        </div>
+      </div>
+    )}
+    {!loadingSummary && aiSummary && (
+      <div
+        id="ai-summary-box"
+        className="mt-10 mb-10 flex justify-center w-full animate-fadein"
+        style={{ minHeight: '2rem' }}
+      >
+        <div className="w-full max-w-2xl bg-white border border-blue-200 rounded-2xl shadow-lg p-6 transition-opacity duration-700 ease-in-out opacity-100">
+          <div className="flex items-center mb-3">
+            <span className="inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full mr-2 tracking-wide">AI Summary</span>
+          </div>
+          <div
+            className="text-left h-auto overflow-y-auto text-gray-800 text-base leading-relaxed flex items-center justify-center"
+            style={{ whiteSpace: 'pre-wrap', fontFamily: 'Inter, sans-serif' }}
+            tabIndex={0}
+          >
+            <TypewriterComponent
+              onInit={(typewriter) => {
+                typewriter
+                  .typeString(aiSummary || "")
+                  .start();
+              }}
+              options={{
+                delay: 15,
+                cursor: " ",
+              }}
+            />
           </div>
         </div>
       </div>
