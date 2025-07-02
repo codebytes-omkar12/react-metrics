@@ -8,49 +8,49 @@ import compression from "compression"
 import morgan from "morgan";
 import { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
-import {GoogleGenAI} from "@google/genai"
+import { GoogleGenAI } from "@google/genai"
 // import { correctSpelling } from "../src/utils/spellCheck"
 
 dotenv.config();
-const ai= new GoogleGenAI({apiKey:process.env.GEMINI_API_KEY !})
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
 const app = express();
 const PORT = 5001;
 
-function listAllTSXFiles(dir:string,basePath=''):string[]{
-  let results:string[]=[];
-  const entries = fs.readdirSync(dir,{withFileTypes:true});
-  for(const entry of entries){
-    const fullpath=path.join(dir,entry.name);
-    const relativePath=path.join(basePath,entry.name);
-    if(entry.isDirectory()){
-      results = results.concat(listAllTSXFiles(fullpath,relativePath));
+function listAllTSXFiles(dir: string, basePath = ''): string[] {
+  let results: string[] = [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullpath = path.join(dir, entry.name);
+    const relativePath = path.join(basePath, entry.name);
+    if (entry.isDirectory()) {
+      results = results.concat(listAllTSXFiles(fullpath, relativePath));
     }
-    else if(entry.isFile() && entry.name.endsWith('.tsx')){
+    else if (entry.isFile() && entry.name.endsWith('.tsx')) {
       results.push(relativePath);
     }
   }
   return results;
 }
 
-app.use(cors()); 
+app.use(cors());
 app.use(express.json());
 app.use(helmet());
 app.use(compression());
 app.use(morgan('dev'))
 
 
-app.get('/health', (req:Request, res:Response) => {
+app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'ok' });
 });
 
-app.get('/list-files',(req:Request,res:Response)=>{
-  const fileList=listAllTSXFiles(path.resolve('src'));
+app.get('/list-files', (req: Request, res: Response) => {
+  const fileList = listAllTSXFiles(path.resolve('src'));
   res.json(fileList);
 })
 
-app.post('/ai/summary',async(req:Request, res:Response)=>{
-  const {metrics} = req.body;
-  const generatePrompt=`You are a React performance analysis engine.
+app.post('/ai/summary', async (req: Request, res: Response) => {
+  const { metrics } = req.body;
+  const generatePrompt = `You are a React performance analysis engine.
   You will receive a metrics object describing the runtime behavior of a single React component. Based on the values, analyze the performance and return a short and crisp summary of how the component is performing. Focus on overall behavior and high-level insights.
   Keep your response concise — no more than 3-4 lines — and in plain text only. Do not include headings or formatting. The tone should be professional and developer-friendly.
 
@@ -84,19 +84,40 @@ METRICS: ${JSON.stringify(metrics, null, 2)}
 `;
   console.log('AI summary endpoint hit. About to call Gemini API.');
   console.log(JSON.stringify(metrics));
-  try{
-    const response = await ai.models.generateContent({
-      model:"gemini-2.5-flash",
-      contents:[{role:"user",parts:[{text:generatePrompt}]}],
-      config:{
-        temperature:0,
-        maxOutputTokens:10000
+  try {
+    const response = await ai.models.generateContentStream({
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: generatePrompt }] }],
+      config: {
+        temperature: 0,
+        maxOutputTokens: 5000
       }
     });
-    
-    console.log('Gemini API responded:',response.text);
-    res.json({summary:response.text});
-  } catch(error){
+
+ 
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+  //  console.log(response);
+    let chunkCount = 0;
+
+for await (const chunk of response) {
+  chunkCount++;
+  const text = chunk.text || '';
+
+  
+
+  
+  console.log(text);
+  
+  res.write(text);
+
+  
+}
+    res.end();
+
+  
+
+  } catch (error) {
     console.log('Gemini API error:', error)
     res.status(500).json({
       error: 'Failed to get AI summary',
@@ -105,7 +126,7 @@ METRICS: ${JSON.stringify(metrics, null, 2)}
   }
 });
 
-app.post('/analyze', (req:Request, res:Response) => {
+app.post('/analyze', (req: Request, res: Response) => {
   const { relativeFilePath } = req.body;
   const fullPath = path.resolve('src', relativeFilePath);
 
@@ -127,8 +148,8 @@ app.post('/ai/test', async (req, res) => {
     const prompt = 'Say hello world.';
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: [{role:"user", parts: [{ text: prompt }] }],
-      
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+
     });
     console.log('Gemini API responded:', response.text);
     res.json({ summary: response.text });
@@ -138,9 +159,9 @@ app.post('/ai/test', async (req, res) => {
   }
 });
 
-const errMiddleware=(err:any,req:Request,res:Response,next:NextFunction)=>{
+const errMiddleware = (err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err);
-  res.status(500).json({error:'Internal Server Error'})
+  res.status(500).json({ error: 'Internal Server Error' })
 }
 app.use(errMiddleware); // Pass the middleware function, not the result of calling it
 

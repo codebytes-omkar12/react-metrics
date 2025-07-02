@@ -40,6 +40,7 @@ const PerformanceDashboard: React.FC = () => {
   //     setTypewriterText("");
   //   }
   // }, [aiSummary, loadingSummary]);
+  // console.log(aiSummary);
 
   return (
     <div>
@@ -72,8 +73,9 @@ const PerformanceDashboard: React.FC = () => {
       </div>
       
     </div>
-    {/* Improved AI Summary UI */}
-    {loadingSummary && (
+    
+   
+    { aiSummary ? (
       <div
         id="ai-summary-box"
         className="mt-10 mb-10 flex justify-center w-full animate-fadein"
@@ -84,31 +86,11 @@ const PerformanceDashboard: React.FC = () => {
             <span className="inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full mr-2 tracking-wide">AI Summary</span>
           </div>
           <div
-            className="text-left h-auto overflow-y-auto text-gray-800 text-base leading-relaxed flex items-center justify-center"
+            className="text-left h-auto overflow-y-auto text-gray-800 text-base leading-relaxed mr-2"
             style={{ whiteSpace: 'pre-wrap', fontFamily: 'Inter, sans-serif' }}
             tabIndex={0}
           >
-            <span className="text-blue-500 font-semibold animate-pulse">Loading...</span>
-          </div>
-        </div>
-      </div>
-    )}
-    {!loadingSummary && aiSummary && (
-      <div
-        id="ai-summary-box"
-        className="mt-10 mb-10 flex justify-center w-full animate-fadein"
-        style={{ minHeight: '2rem' }}
-      >
-        <div className="w-full max-w-2xl bg-white border border-blue-200 rounded-2xl shadow-lg p-6 transition-opacity duration-700 ease-in-out opacity-100">
-          <div className="flex items-center mb-3">
-            <span className="inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full mr-2 tracking-wide">AI Summary</span>
-          </div>
-          <div
-            className="text-left h-auto overflow-y-auto text-gray-800 text-base leading-relaxed flex items-center justify-center"
-            style={{ whiteSpace: 'pre-wrap', fontFamily: 'Inter, sans-serif' }}
-            tabIndex={0}
-          >
-            <TypewriterComponent
+            {/* <TypewriterComponent
               onInit={(typewriter) => {
                 typewriter
                   .typeString(aiSummary || "")
@@ -118,11 +100,32 @@ const PerformanceDashboard: React.FC = () => {
                 delay: 15,
                 cursor: " ",
               }}
-            />
+            /> */}
+            {aiSummary}
           </div>
         </div>
       </div>
-    )}
+    ):(<>
+     {loadingSummary && (
+      <div
+        id="ai-summary-box"
+        className="mt-10 mb-10 flex justify-center w-full animate-fadein"
+        style={{ minHeight: '2rem' }}
+      >
+        <div className="w-full max-w-2xl bg-white border border-blue-200 rounded-2xl shadow-lg p-6 transition-opacity duration-700 ease-in-out opacity-100">
+          <div className="flex items-center mb-5">
+            <span className="inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full tracking-wide">AI Summary</span>
+          </div>
+          <div
+            className="text-left h-auto overflow-y-auto text-gray-800 text-base leading-relaxed "
+            style={{ whiteSpace: 'pre-wrap', fontFamily: 'Inter, sans-serif' }}
+            tabIndex={0}
+          >
+            <span className="text-blue-500 font-semibold animate-pulse mr-3"><div className="w-4 h-4 rounded-full bg-blue-500"></div></span>
+          </div>
+        </div>
+      </div>
+    )}</>)}
     <PerformanceCharts allMetrics={allMetrics} currentMemoryMetrics={currentMemoryMetrics} isMemoryMonitoringAvailable={isMemoryMonitoringAvailable}/>
      
     </div>
