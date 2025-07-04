@@ -1,12 +1,5 @@
 
-type HookDetail ={
-  name: string;
-  line: number;
-  importedFrom: string;
-  description?: string;
-  numArgs: number;
-  firstArgSummary?: string;
-}
+import { type HookDetail } from '../types/performance';
 
 
 export default function HookDetailsTable({data}:{data:HookDetail[]}){
@@ -28,12 +21,12 @@ export default function HookDetailsTable({data}:{data:HookDetail[]}){
       <tbody>
         {data.map((hook, idx) => (
           <tr key={idx} className="border-t">
-            <td className="px-4 py-2">{hook.name}</td>
+            <td className="px-4 py-2">{hook.hook}</td>
             <td className="px-4 py-2">{hook.line}</td>
-            <td className="px-4 py-2">{hook.importedFrom || 'Unknown'}</td>
-            <td className="px-4 py-2">{hook.numArgs ?? '-'}</td>
-            <td className="px-4 py-2">{hook.firstArgSummary?? '-'}</td>
-            <td className="px-4 py-2">{hook.description ?? '-'}</td>
+            <td className="px-4 py-2">{hook.source|| 'Unknown'}</td>
+            <td className="px-4 py-2">{hook.args ?? '-'}</td>
+            <td className="px-4 py-2">{hook.firstArg?? '-'}</td>
+            <td className="px-4 py-2 text-black">{hook.description ?? '-'}</td>
           </tr>
         ))}
       </tbody>

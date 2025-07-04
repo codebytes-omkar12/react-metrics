@@ -1,50 +1,50 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import HookFilePicker from './FilePickerComponent';
-// import { BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import HookDetailsTable from './HookDetailsTable';
+import { type HookDetail } from '../types/performance';
 
-interface HookDetail {
-  name: string;
-  line: number;
-  importedFrom: string;
-  description?: string;
-  numArgs: number;
-  firstArgSummary?: string;
-}
 
 export default function HookAnalysisDashboard() {
-  const [result, setResult] = /*State Variable to store  an object containing the hookDetails array and hookUsed array*/useState<{
-    hookDetails: HookDetail[];
-    hooksUsed: string[];
-  } | null>(null);
+  const [hookDetails, setHookDetails] = useState<HookDetail[] | null>(null);
 
   const handleAnalyze = async (filePath: string) => {
-    const res = await fetch('http://localhost:5001/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ relativeFilePath: filePath }),
-    });
+    try {
+      const res = await fetch('http://localhost:5001/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ relativeFilePath: filePath }),
+      });
 
+      const data = await res.json();
 
-    const data = await res.json();
-    if (Array.isArray(data.hookDetails)) {
-      setResult(data);
-    } else {
-      console.error('Invalid response from server:', data);
+      if (Array.isArray(data)) {
+        setHookDetails(data);
+      } else {
+        console.error('Invalid response from server:', data);
+        setHookDetails([]);
+      }
+    } catch (err) {
+      console.error('Error analyzing file:', err);
+      setHookDetails([]);
     }
   };
+
+  // Extract unique hooks
+  const hooksUsed = hookDetails
+    ? Array.from(new Set(hookDetails.map((h) => h.hook)))
+    : [];
 
   return (
     <div className="p-4 space-y-4">
       <HookFilePicker onAnalyze={handleAnalyze} />
 
-      {(result?.hookDetails?.length ?? 0) > 0 ? (
+      {hookDetails && hookDetails.length > 0 ? (
         <div>
           <h2 className="text-lg font-bold mb-2">Hooks Found:</h2>
           <ul className="space-y-2 text-red-900">
-            {result?.hookDetails.map((hook, index) => (
+            {hookDetails.map((hook, index) => (
               <li key={index} className="bg-gray-100 p-2 rounded shadow-sm">
-                <strong>{hook.name}</strong> @ line {hook.line}
+                <strong>{hook.hook}</strong> @ line {hook.line}
                 <br />
                 {hook.description && (
                   <span className="text-sm italic">“{hook.description}”</span>
@@ -54,22 +54,11 @@ export default function HookAnalysisDashboard() {
           </ul>
 
           <div className="mt-4">
-            <h3 className="font-semibold">Unique Hooks Used:</h3>
-            <code>{JSON.stringify(result?.hooksUsed)}</code>
+            <h3 className="font-semibold text-red-950">Unique Hooks Used:</h3>
+            <code className='text-red-900'>{JSON.stringify(hooksUsed)}</code>
           </div>
 
-          {/* <BarChart
-            width={400}
-            height={300}
-            data={result?.hookDetails.map((h) => ({ name: h.name, count: 1 }))}
-          >
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="count" fill="#8884d8" />
-          </BarChart> */}
-
-          <HookDetailsTable data={result?.hookDetails ?? []} />
+          <HookDetailsTable data={hookDetails} />
         </div>
       ) : (
         <p className="mt-6 text-center text-gray-500 text-lg font-semibold">

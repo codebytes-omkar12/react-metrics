@@ -36,3 +36,11 @@ export interface IHierarchyNode extends IMetrics{
 
 }
   
+export interface HookDetail {
+  hook: string;
+  line: number;
+  source: string;
+  args: number;
+  firstArg: string;
+  description?: string;
+}
