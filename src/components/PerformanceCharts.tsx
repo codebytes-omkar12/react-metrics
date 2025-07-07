@@ -54,6 +54,7 @@ useEffect(() => {
             totalRenderDuration:parseFloat(metric.lastRenderDuration.toFixed(2)),
         }))
     },[allMetrics])
+    
     return (
         <div className="flex flex-col gap-6 pt-6 border-t border-gray-200">
             {/* Component Re-renders Chart */}

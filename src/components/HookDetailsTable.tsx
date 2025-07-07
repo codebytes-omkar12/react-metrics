@@ -3,7 +3,7 @@ import { type HookDetail } from '../types/performance';
 
 
 export default function HookDetailsTable({data}:{data:HookDetail[]}){
-    console.log(data.length);
+
     if(!data.length) return <p className="text-gray-500">No hooks.found</p>;
 
     return(
@@ -26,7 +26,7 @@ export default function HookDetailsTable({data}:{data:HookDetail[]}){
             <td className="px-4 py-2">{hook.source|| 'Unknown'}</td>
             <td className="px-4 py-2">{hook.args ?? '-'}</td>
             <td className="px-4 py-2">{hook.firstArg?? '-'}</td>
-            <td className="px-4 py-2 text-black">{hook.description ?? '-'}</td>
+            <td className="px-4 py-2 text-red-800">{hook.description ?? '-'}</td>
           </tr>
         ))}
       </tbody>

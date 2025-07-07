@@ -48,76 +48,83 @@ function analyzeHookUsageFromFile(fullPath: string) {
   const sourceFile = ts.createSourceFile(fullPath, fileContent, ts.ScriptTarget.Latest, true);
   const hooks: any[] = [];
 
-  function visit(node: ts.Node) {
-    if (ts.isVariableStatement(node)) {
-      node.declarationList.declarations.forEach((decl) => {
-        if (
-          ts.isVariableDeclaration(decl) &&
-          decl.initializer &&
-          ts.isCallExpression(decl.initializer)
-        ) {
-          const expr = decl.initializer.expression;
+  function processHook(hookName: string, callExpr: ts.CallExpression, startPos: number) {
+  const line = sourceFile.getLineAndCharacterOfPosition(startPos).line + 1;
+  const args = callExpr.arguments.map((arg) => arg.getText());
+  const firstArg = args.length > 0 ? args[0] : "";
 
-          if (ts.isIdentifier(expr) && expr.text.startsWith("use")) {
-            const hookName = expr.text;
-            const line = sourceFile.getLineAndCharacterOfPosition(decl.getStart()).line + 1;
-            const args = decl.initializer.arguments.map((arg) => arg.getText());
-            const firstArg = args.length > 0 ? args[0] : "";
+  // TSDoc detection
+  const leadingCommentRanges = ts.getLeadingCommentRanges(fileContent, callExpr.pos) || [];
+  let tsDocText = "";
 
-            // 🔍 Look for TSDoc above the hook call itself
-            const leadingCommentRanges = ts.getLeadingCommentRanges(fileContent, decl.initializer.pos) || [];
-            let tsDocText = "";
+  for (const range of leadingCommentRanges) {
+    const commentText = fileContent.slice(range.pos, range.end).trim();
+    if (commentText.startsWith("/**")) {
+      tsDocText = commentText;
+      break;
+    }
+  }
 
-            for (const range of leadingCommentRanges) {
-              const commentText = fileContent.slice(range.pos, range.end).trim();
-              if (commentText.startsWith("/**")) {
-                tsDocText = commentText;
-                break;
-              }
-            }
+  let description = "";
+  let param = "";
 
-            let description = "";
-            let param = "";
+  if (tsDocText) {
+    const cleanedLines = tsDocText
+      .split('\n')
+      .map(line =>
+        line.replace(/^\/\*\*?/, '')
+          .replace(/\*\/$/, '')
+          .replace(/^\s*\* ?/, '')
+          .trim()
+      )
+      .filter(line => line.length > 0);
 
-            if (tsDocText) {
-  // Clean comment markers
-  const cleanedLines = tsDocText
-    .split('\n')
-    .map(line => line.replace(/^\/\*\*?/, '')
-                     .replace(/\*\/$/, '')
-                     .replace(/^\s*\* ?/, '')
-                     .trim())
-    .filter(line => line.length > 0);
+    const summaryLine = cleanedLines.find(line => !line.startsWith('@'));
+    description = summaryLine || '';
 
-  // Extract the summary (first non-tag line)
-  const summaryLine = cleanedLines.find(line => !line.startsWith('@'));
-  description = summaryLine || '';
+    const paramLine = cleanedLines.find(line => line.startsWith('@param'));
+    param = paramLine?.split('-').slice(1).join('-').trim() || '';
+  }
 
-  // Extract first @param
-  const paramLine = cleanedLines.find(line => line.startsWith('@param'));
-  param = paramLine?.split('-').slice(1).join('-').trim() || '';
-
-  console.log('TSDoc comment found:', tsDocText);
-  console.log('Extracted summary:', description);
-  console.log('Extracted first param:', param);
+  hooks.push({
+    hook: hookName,
+    line,
+    source: "react",
+    args: args.length,
+    firstArg,
+    description: description || param || "",
+  });
 }
 
 
-            hooks.push({
-              hook: hookName,
-              line,
-              source: "react",
-              args: args.length,
-              firstArg,
-              description: description || param || "",
-            });
-          }
+  function visit(node: ts.Node) {
+  // ✅ Case 1: Variable-based hooks (already handled)
+  if (ts.isVariableStatement(node)) {
+    node.declarationList.declarations.forEach((decl) => {
+      if (
+        ts.isVariableDeclaration(decl) &&
+        decl.initializer &&
+        ts.isCallExpression(decl.initializer)
+      ) {
+        const expr = decl.initializer.expression;
+        if (ts.isIdentifier(expr) && expr.text.startsWith("use")) {
+          processHook(expr.text, decl.initializer, decl.getStart());
         }
-      });
-    }
-
-    ts.forEachChild(node, visit);
+      }
+    });
   }
+
+  // ✅ Case 2: Standalone useEffect/useCallback/etc.
+  if (ts.isExpressionStatement(node) && ts.isCallExpression(node.expression)) {
+    const expr = node.expression.expression;
+    if (ts.isIdentifier(expr) && expr.text.startsWith("use")) {
+      processHook(expr.text, node.expression, node.getStart());
+    }
+  }
+
+  ts.forEachChild(node, visit);
+}
+
 
   visit(sourceFile);
   console.log("Hooks extracted:", hooks);
@@ -128,17 +135,18 @@ function analyzeHookUsageFromFile(fullPath: string) {
 
 
 
-function listAllTSXFiles(dir: string, basePath = ''): string[] {
+function listAllCodeFiles(dir: string, basePath = ''): string[] {
+  const allowedExts=['.tsx','.ts','jsx','.js'];
   let results: string[] = [];
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
     const fullpath = path.join(dir, entry.name);
     const relativePath = path.join(basePath, entry.name);
     if (entry.isDirectory()) {
-      results = results.concat(listAllTSXFiles(fullpath, relativePath));
+      results = results.concat(listAllCodeFiles(fullpath, relativePath));
     }
-    else if (entry.isFile() && entry.name.endsWith('.tsx')) {
-      results.push(relativePath);
+    else if (entry.isFile() && allowedExts.some((ext)=>entry.name.endsWith(ext))) {
+      results.push(relativePath.replace(/\\/g, '/'));
     }
   }
   return results;
@@ -159,7 +167,7 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 app.get('/list-files', (req: Request, res: Response) => {
-  const fileList = listAllTSXFiles(path.resolve('src'));
+  const fileList = listAllCodeFiles(path.resolve('src'));
   res.json(fileList);
 })
 

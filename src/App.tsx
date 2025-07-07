@@ -1,67 +1,60 @@
-import './App.css'
-import PerformanceDashboard from './components/PerformanceDashBoard'
-import { PerformanceProvider } from './context/PerformanceContext'
-import TestComponent from './components/TestComponent'
-import { useState } from 'react'
-import { usePerformanceMonitor } from './hooks/usePerformanceMonitor'
-import withPerformanceMonitor from './HOC/withPerformanceMonitor'
-import HookAnalysisDashboard from './components/HookAnalysisDashboard'
-import ErrorBoundary from './components/ErrorBoundary'
-
-
-
+import './App.css';
+import PerformanceDashboard from './components/PerformanceDashBoard';
+import { PerformanceProvider } from './context/PerformanceContext';
+import TestComponent from './components/TestComponent';
+import { useState } from 'react';
+import { usePerformanceMonitor } from './hooks/usePerformanceMonitor';
+import withPerformanceMonitor from './HOC/withPerformanceMonitor';
+import ErrorBoundary from './components/ErrorBoundary';
+import Sidebar from './components/Sidebar';
 
 function App() {
-    // const [aiSummary, setAiSummary] = useState<string | null>(null);
-  const MonitoredPerformanceDashboard = withPerformanceMonitor(PerformanceDashboard, { id: 'Performance DashBoard', displayName: "Performance DashBoard", parentId: "App" });
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+
+  // Hook for monitoring App component itself (no static id needed)
+  usePerformanceMonitor({
+    displayName: "Application Root",
+    props: { selectedFile },
+  });
+
+  // Dashboard wrapped with HOC, using custom ID and label
+const MonitoredPerformanceDashboard = withPerformanceMonitor(PerformanceDashboard, {
+  parentId: "App"
+});
 
 
-  // console.log((performance?.memory as any));
-  const [dynamicPropValue, setDynamicPropvalue] =/*Global Prop*/ useState("initial dynamic prop");
+  return (
+    <ErrorBoundary fallback={<div>Fatal Error</div>}>
+      <PerformanceProvider>
+        <div className="min-h-screen flex bg-gradient-to-br from-gray-50 to-white">
+          {/* Sidebar on the left */}
+          <Sidebar onSelectFile={setSelectedFile} />
 
-  const handleDynamicProp = () => {
-    setDynamicPropvalue(new Date().toLocaleTimeString());
-  }
-  /*To Extract The Metrics Data*/usePerformanceMonitor("App", "Application Root", { dynamicPropValue }, undefined);
-  return (<ErrorBoundary fallback={<div>Fatal Error</div>}>
-    <PerformanceProvider>
-      <div className="min-h-screen flex flex-auto items-center justify-center bg-gradient-to-br from-gray-50 to-white py-8">
-        <div className="container w-full mx-auto p-8 bg-white rounded-xl shadow-2xl">
-          <h1 className="text-center text-4xl font-extrabold text-gray-800 mb-8 pb-4 border-b-4 border-gray-200">
-            Performance Monitoring Dashboard
-          </h1>
+          {/* Main content on the right */}
+          <main className="flex-1 p-6 overflow-y-auto">
+            <div className="w-full max-w-7xl mx-auto bg-white rounded-xl shadow-2xl p-8">
+              <h1 className="text-center text-4xl font-extrabold text-gray-800 mb-8 pb-4 border-b-4 border-gray-200">
+                Performance Monitoring Dashboard
+              </h1>
 
-          <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <p className="text-lg font-medium text-gray-700">
-              Global Prop: <strong className="text-blue-700">{dynamicPropValue}</strong>
-            </p>
-            <button onClick={handleDynamicProp} className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-300 ease-in-out transform hover:-translate-y-1">
-              Increment Global Prop
-            </button>
-          </div>
-          <div className="flex flex-wrap justify-center gap-6 mb-10 p-6 bg-gray-50 rounded-xl shadow-inner">
-            <TestComponent
-              id="testComp1"
-              displayName="TestComponent A"
-              someProp={dynamicPropValue}
-              parentId="App"
-            />
-            <TestComponent
-              id="testComp2"
-              displayName="TestComponent B"
-              someProp={dynamicPropValue}
-              parentId="App"
-            />
-          </div>
-          <hr className="my-10 border-t-2 border-gray-300 w-full" />
-          <MonitoredPerformanceDashboard />
-          <HookAnalysisDashboard/>
+              {/* Optional test component rendered invisibly for metrics */}
+              <div
+                className="flex flex-wrap justify-center gap-6 mb-10 p-6 bg-gray-50 rounded-xl shadow-inner"
+                style={{ display: "none" }}
+              >
+                <TestComponent someProp="easy prop" />
+              </div>
+
+              <hr className="my-10 border-t-2 border-gray-300 w-full" />
+
+              <MonitoredPerformanceDashboard filePath={selectedFile} />
+            
+            </div>
+          </main>
         </div>
-        
-      </div>
-    </PerformanceProvider>
+      </PerformanceProvider>
     </ErrorBoundary>
-  )
+  );
 }
 
-export default App
+export default App;

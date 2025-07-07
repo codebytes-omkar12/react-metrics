@@ -1,62 +1,61 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
 import ChildComponent from "./ChildComponent";
 
 /**
- * Props for the TestComponent
- * @property id - Unique ID of the component
- * @property displayName - Display name of the component
- * @property someProp - Some test prop to display and pass to children
- * @property parentId - (Optional) ID of the parent component
+ * Props accepted by the TestComponent.
  */
 interface TestComponentProps {
-  id: string;
-  displayName: string;
+  /** A string passed down from the parent component */
   someProp: string;
+
+  /** Optional parent component ID for tracking hierarchy */
   parentId?: string;
 }
 
 /**
- * A test component that tracks internal state, performance metrics, and renders a child.
- * @param props - Component props including ID, display name, someProp, and optionally parent ID
+ * A test component used to simulate dynamic state updates and measure React performance metrics.
+ * It updates an internal counter every 5 seconds and passes props to a child component.
+ *
+ * @param someProp - A demo prop passed from the parent
+ * @param parentId - Optional ID of the parent component
  */
-const TestComponent: React.FC<TestComponentProps> = ({
-  id,
-  displayName,
-  someProp,
-  parentId
-}: TestComponentProps) => {
-
-
+const TestComponent: React.FC<TestComponentProps> = ({ someProp, parentId }) => {
+ 
   const [clickCount, setClickCount] = 
-    /**
-   * Tracks the number of times the button has been clicked.
-   * @param 0 - Initial click count value
+   /**
+   * State to track how many times the component has internally updated.
+   * @param initialCount - The initial click count (set to 0).
    */
   useState(0);
 
-const metrics = 
   /**
-   * Monitors and reports performance metrics for this component.
-   * @param id - Unique identifier for performance tracking
-   * @param displayName - Display name label for metrics
-   * @param someProp - Some test prop to display and pass to children
-   * @param parentId - (Optional) ID of the parent component
-   * @remarks This component internally tracks its own state and renders a child for profiling.
+   * Automatically increments `clickCount` every 5 seconds.
+   * Cleans up the interval on unmount to prevent memory leaks.
    */
-usePerformanceMonitor(
-    id,
-    "Parent Component",
-    { id, displayName, someProp, clickCount, parentId },
-    parentId
-  );
+  useEffect(() => {
+    const clickInterval = setInterval(() => {
+      setClickCount((prev) => prev + 1);
+    }, 5000);
 
+    return () => clearInterval(clickInterval);
+  }, []);
+
+  
+  const metrics = 
   /**
-   * Increments the internal click count
+   * Extracts performance metrics for this component using a custom hook.
+   * Tracks props, internal state, and assigns a display name.
+   *
+   * @param displayName - A user-friendly label for UI and logs
+   * @param props - Props and internal state passed for analysis
+   * @param parentId - Optional parent component ID to build hierarchy
    */
-  const handleClick = () => {
-    setClickCount(prev => prev + 1);
-  };
+  usePerformanceMonitor({
+    displayName: "Parent Component",
+    props: { someProp, clickCount },
+    parentId,
+  });
 
   return (
     <div className="border w-full border-blue-300 p-6 m-4 rounded-lg bg-blue-50 shadow-md flex flex-col items-center space-y-4 flex-1 min-w-[300px] max-w-sm sm:max-w-md lg:max-w-[48%]">
@@ -69,18 +68,9 @@ usePerformanceMonitor(
       <p className="text-gray-700">
         Prop (someProp): <span className="font-semibold">{someProp}</span>
       </p>
-      <button
-        onClick={handleClick}
-        className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 transform hover:-translate-y-0.5"
-      >
-        {`Increment ${metrics.displayName} State`}
-      </button>
 
-      <ChildComponent
-        id={`${id}-child`}
-        parentId={id}
-        someProp={someProp}
-      />
+      {/* Child component is rendered with inherited prop and parent ID */}
+      <ChildComponent someProp={someProp} parentId={metrics.id} />
     </div>
   );
 };

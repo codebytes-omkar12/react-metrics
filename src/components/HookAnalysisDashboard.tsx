@@ -1,10 +1,12 @@
-import { useState } from 'react';
-import HookFilePicker from './FilePickerComponent';
+import { useState, useEffect } from 'react';
 import HookDetailsTable from './HookDetailsTable';
 import { type HookDetail } from '../types/performance';
 
+interface Props {
+  filePath: string;
+}
 
-export default function HookAnalysisDashboard() {
+export default function HookAnalysisDashboard({ filePath }: Props) {
   const [hookDetails, setHookDetails] = useState<HookDetail[] | null>(null);
 
   const handleAnalyze = async (filePath: string) => {
@@ -29,15 +31,19 @@ export default function HookAnalysisDashboard() {
     }
   };
 
-  // Extract unique hooks
+  // 🔁 Trigger analysis when filePath changes
+  useEffect(() => {
+    if (filePath) {
+      handleAnalyze(filePath);
+    }
+  }, [filePath]);
+
   const hooksUsed = hookDetails
     ? Array.from(new Set(hookDetails.map((h) => h.hook)))
     : [];
 
   return (
     <div className="p-4 space-y-4">
-      <HookFilePicker onAnalyze={handleAnalyze} />
-
       {hookDetails && hookDetails.length > 0 ? (
         <div>
           <h2 className="text-lg font-bold mb-2">Hooks Found:</h2>

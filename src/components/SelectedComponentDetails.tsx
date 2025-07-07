@@ -84,6 +84,7 @@ while (true) {
 };
 
   // console.log('selectedComponentId:', selectedComponentId, 'selectedMetrics:', selectedMetrics);
+SelectedComponentDetails.displayName = "SelectedComponentDetails";
 
 
   return (
