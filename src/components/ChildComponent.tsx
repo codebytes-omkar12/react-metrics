@@ -10,6 +10,7 @@ const ChildComponent = ({ parentId, someProp }: ChildComponentProps) => {
   const [childCount, setChildCount] = useState(0);
 
   const metrics = usePerformanceMonitor({
+    id:"ChildComponent",
     displayName: "Child Component",
     props: { someProp, childCount },
     parentId

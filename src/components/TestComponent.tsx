@@ -52,7 +52,8 @@ const TestComponent: React.FC<TestComponentProps> = ({ someProp, parentId }) => 
    * @param parentId - Optional parent component ID to build hierarchy
    */
   usePerformanceMonitor({
-    displayName: "Parent Component",
+    id:"TestComponent",
+    displayName: "ParentComponent",
     props: { someProp, clickCount },
     parentId,
   });
