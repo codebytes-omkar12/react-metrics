@@ -1,5 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { Folder, FileText, ChevronDown, ChevronRight, ChevronLeft } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import {
+  Folder,
+  FileText,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
+import { useSidebar } from "../context/SideBarContext"; // 🔥 Importing collapse context
 
 interface TreeNode {
   name: string;
@@ -12,6 +18,7 @@ interface SidebarProps {
   onSelectFile: (filePath: string) => void;
 }
 
+// 📁 Build the folder tree
 function buildTree(paths: string[]): TreeNode[] {
   const root: TreeNode[] = [];
 
@@ -43,7 +50,7 @@ function buildTree(paths: string[]): TreeNode[] {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ onSelectFile }) => {
-  const [isOpen, setIsOpen] = useState(true);
+  const { isSidebarOpen } = useSidebar(); // 👈 Controlled via Navbar
   const [treeData, setTreeData] = useState<TreeNode[]>([]);
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
@@ -56,7 +63,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onSelectFile }) => {
     });
   };
 
-  const renderTree = (nodes: TreeNode[]): JSX.Element[] => {
+  // 📁 Recursive tree renderer
+  const renderTree = (nodes: TreeNode[]) => {
     const sortedNodes = [...nodes].sort((a, b) => {
       if (a.type !== b.type) return a.type === "folder" ? -1 : 1;
       return a.name.localeCompare(b.name);
@@ -69,8 +77,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onSelectFile }) => {
       return (
         <div key={node.path} className="pl-2">
           <div
-            className={`flex items-center space-x-2 py-1 cursor-pointer rounded px-1 ${
-              selectedFilePath === node.path ? "bg-blue-700 text-white" : ""
+            className={`flex items-center space-x-2 py-1 px-1 cursor-pointer rounded transition-colors ${
+              selectedFilePath === node.path
+                ? "bg-blue-700 text-white"
+                : "hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
             onClick={() => {
               if (isFolder) {
@@ -89,7 +99,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onSelectFile }) => {
             ) : (
               <FileText size={16} />
             )}
-            <span className="truncate">{node.name}</span>
+            {isSidebarOpen && (
+              <span className="truncate">{node.name}</span>
+            )}
           </div>
 
           {isFolder && isOpen && node.children && (
@@ -99,7 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onSelectFile }) => {
       );
     });
   };
-console.log(selectedFilePath);
+
   useEffect(() => {
     fetch("http://localhost:5001/list-files")
       .then((res) => res.json())
@@ -112,20 +124,29 @@ console.log(selectedFilePath);
 
   return (
     <aside
-      className={`transition-all duration-300 ${
-        isOpen ? "w-64" : "w-16"
-      } bg-gray-900 text-white h-auto overflow-y-auto shadow-lg`}
+      className={`
+        transition-all duration-300 ease-in-out
+        overflow-y-auto
+        shadow-lg
+        text-black
+        border-r border-gray-200 dark:border-gray-700
+        bg-white dark:bg-gray-800 dark:text-white
+        ${isSidebarOpen ? "w-64" : "w-16"}
+      `}
     >
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
-        <span className="text-lg font-bold">{isOpen ? "Explorer" : "🧩"}</span>
-        <button onClick={() => setIsOpen(!isOpen)} className="focus:outline-none">
-          {isOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
-        </button>
+        <span className={`text-lg font-bold transition-opacity duration-300 ${isSidebarOpen ? "opacity-100" : "opacity-0"}`}>
+          Explorer
+        </span>
+        {/* Optional local toggle removed — control is from Navbar */}
       </div>
 
-      <div className="px-2 py-4">{renderTree(treeData)}</div>
+      <div className="px-2 py-4">
+        {renderTree(treeData)}
+      </div>
     </aside>
   );
 };
 
 export default Sidebar;
+

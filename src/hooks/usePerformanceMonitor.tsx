@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { type IMetrics, type IPropChange } from "../types/performance";
 import { usePerformanceDispatch } from '../context/PerformanceContext';
-import { generateComponentId } from "../utils/generateComponentId";
+
 
 interface PerformanceMonitorOptions {
   id?: string;
@@ -33,7 +33,7 @@ const findPropChanges = (oldProps: Record<string, any> | undefined, newProps: Re
 
 export function usePerformanceMonitor(options: PerformanceMonitorOptions) {
   const { id, displayName, props = {}, parentId } = options;
-  const componentId = id ?? generateComponentId();
+  const componentId = id ?? "Unknown Component"
   const label = displayName ?? componentId;
 
   const mountStartTimeRef = useRef<number>(performance.now());

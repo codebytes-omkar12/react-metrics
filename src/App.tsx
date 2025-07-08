@@ -1,3 +1,4 @@
+// App.tsx
 import './App.css';
 import PerformanceDashboard from './components/PerformanceDashBoard';
 import { PerformanceProvider } from './context/PerformanceContext';
@@ -7,54 +8,65 @@ import { usePerformanceMonitor } from './hooks/usePerformanceMonitor';
 import withPerformanceMonitor from './HOC/withPerformanceMonitor';
 import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
+import Navbar from './components/Navbar';
+import { SidebarProvider, useSidebar } from './context/SideBarContext';
+import { ThemeProvider } from './context/ThemeContext';
 
-function App() {
+function AppLayout() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const { isSidebarOpen } = useSidebar();
 
-  // Hook for monitoring App component itself (no static id needed)
+  // Monitor App performance
   usePerformanceMonitor({
     displayName: "Application Root",
     props: { selectedFile },
   });
 
-  // Dashboard wrapped with HOC, using custom ID and label
-const MonitoredPerformanceDashboard = withPerformanceMonitor(PerformanceDashboard, {
-  parentId: "App"
-});
+  const MonitoredPerformanceDashboard = withPerformanceMonitor(PerformanceDashboard, {id:"PerformanceDashBoard",
+    parentId: "App"
+  });
 
+  return (
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+      <Navbar />
 
+      <div className="flex flex-1">
+        {isSidebarOpen && <Sidebar onSelectFile={setSelectedFile} />}
+
+        <main className="flex-1 p-6 overflow-y-auto transition-all duration-300">
+          <div className="w-full max-w-7xl mx-auto bg-white dark:bg-gray-900 dark:text-white rounded-xl shadow-2xl p-8">
+            <h1 className="text-center text-4xl font-extrabold text-gray-800 dark:text-white mb-8 pb-4 border-b-4 border-gray-200 dark:border-gray-700">
+              Performance Monitoring Dashboard
+            </h1>
+
+            {/* Hidden test component */}
+            <div
+              className="flex flex-wrap justify-center gap-6 mb-10 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-inner"
+              style={{ display: "none" }}
+            >
+              <TestComponent someProp="easy prop" />
+            </div>
+
+            <hr className="my-10 border-t-2 border-gray-300 dark:border-gray-600 w-full" />
+
+            <MonitoredPerformanceDashboard filePath={selectedFile} />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+export default function App() {
   return (
     <ErrorBoundary fallback={<div>Fatal Error</div>}>
       <PerformanceProvider>
-        <div className="min-h-screen flex bg-gradient-to-br from-gray-50 to-white">
-          {/* Sidebar on the left */}
-          <Sidebar onSelectFile={setSelectedFile} />
-
-          {/* Main content on the right */}
-          <main className="flex-1 p-6 overflow-y-auto">
-            <div className="w-full max-w-7xl mx-auto bg-white rounded-xl shadow-2xl p-8">
-              <h1 className="text-center text-4xl font-extrabold text-gray-800 mb-8 pb-4 border-b-4 border-gray-200">
-                Performance Monitoring Dashboard
-              </h1>
-
-              {/* Optional test component rendered invisibly for metrics */}
-              <div
-                className="flex flex-wrap justify-center gap-6 mb-10 p-6 bg-gray-50 rounded-xl shadow-inner"
-                style={{ display: "none" }}
-              >
-                <TestComponent someProp="easy prop" />
-              </div>
-
-              <hr className="my-10 border-t-2 border-gray-300 w-full" />
-
-              <MonitoredPerformanceDashboard filePath={selectedFile} />
-            
-            </div>
-          </main>
-        </div>
+        <ThemeProvider>
+          <SidebarProvider>
+            <AppLayout />
+          </SidebarProvider>
+        </ThemeProvider>
       </PerformanceProvider>
     </ErrorBoundary>
   );
 }
-
-export default App;

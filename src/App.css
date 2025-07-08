@@ -2,11 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* index.css or App.css */
+html,
+body,
 #root {
-  max-width:10000px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  height: 100%;
+  width:100%;
+  margin: 0;
 }
 
 

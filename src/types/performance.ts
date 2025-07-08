@@ -1,13 +1,14 @@
-export interface IMetrics{
-  mountTime:number;
-  lastRenderDuration:number;
+export interface IMetrics {
+  mountTime: number;
+  lastRenderDuration: number;
   totalRenderDuration: number;
-  reRenders:number;
-  propsChanged:Record<string,IPropChange>;
-  _prevProps?:Record<string,any> | undefined
-  parentId?:string;
-  id:string;
-  displayName:string;
+  reRenders: number;
+  propsChanged: Record<string, IPropChange>;
+  _prevProps?: Record<string, any> | undefined;
+  parentId?: string;
+  id: string; // This can now often be the relativeFilePath
+  displayName: string;
+  relativeFilePath?: string | null; // ✅ NEW: path to match analysis/summaries
 }
 
 export interface IPropChange{
