@@ -187,7 +187,7 @@ ${JSON.stringify(hookDetails, null, 2)}
     const response= await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: { temperature: 0.2, maxOutputTokens: 5000},
+      config: { temperature: 0.2, maxOutputTokens: 4000},
     })
     const text = response.text || '';
     console.log('🔍 Gemini raw response:', text);
@@ -267,7 +267,7 @@ SUGGESTIONS:
     const response = await ai.models.generateContentStream({
       model: 'gemini-2.5-flash',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: { temperature: 0.2, maxOutputTokens: 5000 },
+      config: { temperature: 0.2, maxOutputTokens: 3000 },
     });
 
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');

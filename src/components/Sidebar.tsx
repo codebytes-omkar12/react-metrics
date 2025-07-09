@@ -1,21 +1,13 @@
 import React, { useEffect, useState } from "react";
-import {
-  Folder,
-  FileText,
-  ChevronDown,
-  ChevronRight,
-} from "lucide-react";
-import { useSidebar } from "../context/SideBarContext"; // 🔥 Importing collapse context
+import { Folder, FileText, ChevronDown, ChevronRight } from "lucide-react";
+import { useSidebar } from "../context/SideBarContext";
+import { useFilePath } from "../context/FilePathContext";
 
 interface TreeNode {
   name: string;
   path: string;
   children?: TreeNode[];
   type: "file" | "folder";
-}
-
-interface SidebarProps {
-  onSelectFile: (filePath: string) => void;
 }
 
 // 📁 Build the folder tree
@@ -49,11 +41,12 @@ function buildTree(paths: string[]): TreeNode[] {
   return root;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onSelectFile }) => {
-  const { isSidebarOpen } = useSidebar(); // 👈 Controlled via Navbar
+const Sidebar: React.FC = () => {
+  const { isSidebarOpen } = useSidebar();
   const [treeData, setTreeData] = useState<TreeNode[]>([]);
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
+  const { setFilePath } = useFilePath(); // ✅ Using context
 
   const toggleFolder = (path: string) => {
     setOpenFolders((prev) => {
@@ -63,7 +56,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onSelectFile }) => {
     });
   };
 
-  // 📁 Recursive tree renderer
   const renderTree = (nodes: TreeNode[]) => {
     const sortedNodes = [...nodes].sort((a, b) => {
       if (a.type !== b.type) return a.type === "folder" ? -1 : 1;
@@ -87,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onSelectFile }) => {
                 toggleFolder(node.path);
               } else {
                 setSelectedFilePath(node.path);
-                onSelectFile(node.path);
+                setFilePath(node.path); // ✅ Set globally
               }
             }}
           >
@@ -99,9 +91,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onSelectFile }) => {
             ) : (
               <FileText size={16} />
             )}
-            {isSidebarOpen && (
-              <span className="truncate">{node.name}</span>
-            )}
+            {isSidebarOpen && <span className="truncate">{node.name}</span>}
           </div>
 
           {isFolder && isOpen && node.children && (
@@ -135,18 +125,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onSelectFile }) => {
       `}
     >
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
-        <span className={`text-lg font-bold transition-opacity duration-300 ${isSidebarOpen ? "opacity-100" : "opacity-0"}`}>
+        <span
+          className={`text-lg font-bold transition-opacity duration-300 ${
+            isSidebarOpen ? "opacity-100" : "opacity-0"
+          }`}
+        >
           Explorer
         </span>
-        {/* Optional local toggle removed — control is from Navbar */}
       </div>
 
-      <div className="px-2 py-4">
-        {renderTree(treeData)}
-      </div>
+      <div className="px-2 py-4">{renderTree(treeData)}</div>
     </aside>
   );
 };
 
 export default Sidebar;
-

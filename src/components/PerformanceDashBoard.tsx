@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useRef } from "react";
+import React, { useState, useEffect } from "react";
 import PerformanceCharts from "./PerformanceCharts";
 import { usePerformanceMetrics } from "../context/PerformanceContext";
 import { useMemoryMonitor } from "../hooks/useMemoryMonitor";
@@ -8,66 +8,66 @@ import { useBuildHierarchyTree } from "../utils/useBuildHierarchyTree";
 import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
 import HookAnalysisDashboard from '../components/HookAnalysisDashboard';
 import HealthMeter from "./HealthMeter";
+import { useFilePath } from '../context/FilePathContext';
+import { getComponentIdFromPath } from "../utils/getComponentIdFromPath";
 
-interface Props {
-  filePath?: string | null;
-}
 
-const PerformanceDashboard: React.FC<Props> = ({ filePath = null }) => {
+
+const PerformanceDashboard: React.FC = () => {
+  const { filePath } = useFilePath(); // ⬅ get context setter
   const { allMetrics, currentMemoryMetrics } = usePerformanceMetrics();
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
   const [hookDetails, setHookDetails] = useState<any[]>([]);
   const [healthScore, setHealthScore] = useState(0);
-const debounceRef = useRef<NodeJS.Timeout | null>(null);
+   const [hookReady, setHookReady] = useState(false); // ✅
+
 
   const buildHierarchyTree = useBuildHierarchyTree(allMetrics);
   const isMemoryMonitoringAvailable = useMemoryMonitor({ intervalMs: 1000 });
 
   useEffect(() => {
     if (filePath) {
-      const filename = filePath.split('/').pop() || "";
-      const componentId = filename.replace(/\.[^/.]+$/, "");
-      const normalizedId = componentId.charAt(0).toUpperCase() + componentId.slice(1);
+     
+      const normalizedId =  getComponentIdFromPath(filePath);
       setSelectedComponentId(normalizedId);
 
       console.log("Selected filePath:", filePath);
-      console.log("Derived componentId:", componentId);
+      
       console.log("Normalized ID:", normalizedId);
     }
   }, [filePath]);
 
   // 🧠 Optimized AI Score Fetch (prevents unnecessary calls)
   useEffect(() => {
-  if (!filePath) return;
+    if (!filePath || !hookReady || !selectedComponentId) return;
 
-  const fetchScore = async () => {
-    try {
-      const response = await fetch("http://localhost:5001/ai/score", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          metrics: selectedComponentId ? allMetrics[selectedComponentId] ?? {} : {},
-          relativeFilePath: filePath,
-          hookDetails: hookDetails ?? [],
-        }),
-      });
+    const fetchScore = async () => {
+      try {
+        const response = await fetch("http://localhost:5001/ai/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            metrics: allMetrics[selectedComponentId] ?? {},
+            relativeFilePath: filePath,
+            hookDetails,
+          }),
+        });
 
-      const data = await response.json();
-      if (data?.score !== undefined) {
-        setHealthScore(data.score);
-      } else {
-        console.warn("Score missing in response", data);
+        const data = await response.json();
+        if (typeof data?.score === "number") {
+          setHealthScore(data.score);
+        } else {
+          console.warn("Missing score in response", data);
+        }
+      } catch (err) {
+        console.error("AI Score fetch error:", err);
       }
-    } catch (err) {
-      console.error("AI Score fetch error:", err);
-    }
-  };
+    };
 
-  fetchScore();
-}, []);
-
+    fetchScore();
+  }, [filePath, hookReady, selectedComponentId]);
 
   const MonitoredMemoryComponent = withPerformanceMonitor(MemoryComponent, { parentId: "PerformanceDashboard" });
   const MonitoredMetricsCard = withPerformanceMonitor(SelectedComponentDetails, { parentId: "PerformanceDashboard" });
@@ -137,7 +137,10 @@ const debounceRef = useRef<NodeJS.Timeout | null>(null);
       />
 
       {filePath && (
-        <HookAnalysisDashboard filePath={filePath} onHookDetailsExtracted={setHookDetails} />
+        <HookAnalysisDashboard   onHookDetailsExtracted={(details) => {
+            setHookDetails(details);
+            setHookReady(true); // ✅ trigger AI scoring once ready
+          }} />
       )}
     </div>
   );
