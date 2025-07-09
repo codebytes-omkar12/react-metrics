@@ -143,73 +143,90 @@ app.post('/analyze', (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to analyze file', details: String(err) });
   }
 });
-app.post('/ai/score' , async(req:Request,res:Response)=>{
-  const {metrics,relativeFilePath,hookDetails}=req.body;
-  if (!relativeFilePath) {
-   res.status(400).json({ error: 'Missing metrics, file path, or hook details' });
-    return 
+app.post('/ai/score', async (req: Request, res: Response) => {
+  const { metrics, relativeFilePath, hookDetails } = req.body;
+
+  if (!metrics || typeof metrics !== 'object') {
+    res.status(400).json({ error: 'Missing or invalid metrics' });
+    return ;
   }
+  if (!relativeFilePath || typeof relativeFilePath !== 'string') {
+   res.status(400).json({ error: 'Missing or invalid relativeFilePath' });
+    return ;
+  }
+  if (!hookDetails || !Array.isArray(hookDetails)) {
+    res.status(400).json({ error: 'Missing or invalid hookDetails' });
+    return ;
+  }
+
   const fullPath = path.resolve('src', relativeFilePath);
   if (!fs.existsSync(fullPath)) {
-     res.status(404).json({ error: 'File not found' });
-     return
+    res.status(404).json({ error: 'File not found' });
+    return ;
   }
+
   const sourceCode = fs.readFileSync(fullPath, 'utf-8');
   const extension = path.extname(relativeFilePath);
   const isComponent = Object.keys(metrics).length > 0;
 
-  const prompt=`You are a React and frontend code scorer AI.
-You are a React and frontend code scorer AI.
+  const prompt = `
+You are a React code reviewer AI. Score the code from 0-100 based on optimization and maintainability.
+Return JSON: { "file": "filename", "score": number }
 
-Your task is to give a score (0-100) representing how optimized, maintainable, and React-idiomatic the following code is.
-Based on the code and metrics below, respond ONLY in this JSON format containig the file name and the score:
-{ "file:file for which the score is calculated ,score": the score which will be a number between 0-100} 
- it should not be random for example:For the same Input the score should be consistent score would only change when there is a change in any of the given input data .
-
-Do not add any explanation.
-
-    --- FILE INFO ---
+--- FILE INFO ---
 Extension: ${extension}
-Type: ${isComponent ? 'React Component' : 'Utility / Hook / Other'}
+Type: ${isComponent ? 'React Component' : 'Utility/Other'}
 
 --- SOURCE CODE ---
-\`\`\`${extension.replace('.', '')}
 ${sourceCode}
-\`\`\`
 
-${isComponent ? `--- METRICS ---\n${JSON.stringify(metrics, null, 2)}\n` : ''}
-
+${isComponent ? `--- METRICS ---\n${JSON.stringify(metrics)}\n` : ''}
 --- HOOK USAGE ---
-${JSON.stringify(hookDetails, null, 2)}
-  `;
+${JSON.stringify(hookDetails)}
+`;
 
-  try{
-    const response= await ai.models.generateContent({
+  try {
+    const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: { temperature: 0.2, maxOutputTokens: 4000},
-    })
-    const text = response.text || '';
-    console.log('🔍 Gemini raw response:', text);
-const match = text.match(/"score"\s*:\s*(\d{1,3})/i);
-const score = match ? parseInt(match[1]) : null;
+      config: { temperature: 0.2, maxOutputTokens: 4000 },
+    });
 
-if (score === null) {
-  res.status(500).json({ error: 'Score not found in AI response' });
-   return;
-}
-res.json({ score });
+    const text = response.text || '';
+console.log('🔍 Gemini raw response:', text);
+
+try {
+  const cleaned = text
+    .replace(/```json/i, '')
+    .replace(/```/, '')
+    .trim();
+
+  const parsed = JSON.parse(cleaned);
+
+  if (typeof parsed.score !== 'number') {
+    throw new Error('Score missing or invalid');
   }
-  catch(error){
+
+  res.json({ score: parsed.score });
+} catch (e) {
+  console.error('Invalid AI response:', e, text);
+  res.status(500).json({
+    error: 'AI returned invalid JSON',
+    raw: text,
+    details: e instanceof Error ? e.message : String(e),
+  });
+}
+
+
+  } catch (error) {
     console.error('Gemini API error:', error);
     res.status(500).json({
       error: 'Failed to get AI Score',
       details: error instanceof Error ? error.message : String(error),
     });
   }
+});
 
-
-})
 app.post('/ai/summary', async (req: Request, res: Response) => {
   const { metrics, relativeFilePath, hookDetails } = req.body;
 
