@@ -22,6 +22,8 @@ const PerformanceDashboard: React.FC = () => {
   const [hookDetails, setHookDetails] = useState<any[]>([]);
   const [healthScore, setHealthScore] = useState(0);
    const [hookReady, setHookReady] = useState(false); // ✅
+   const [loadingScore, setLoadingScore] = useState(false); // 🔄
+
 
 
   const buildHierarchyTree = useBuildHierarchyTree(allMetrics);
@@ -44,6 +46,7 @@ const PerformanceDashboard: React.FC = () => {
     if (!filePath || !hookReady || !selectedComponentId) return;
 
     const fetchScore = async () => {
+      setLoadingScore(true); 
       try {
         const response = await fetch("http://localhost:5001/ai/score", {
           method: "POST",
@@ -63,7 +66,9 @@ const PerformanceDashboard: React.FC = () => {
         }
       } catch (err) {
         console.error("AI Score fetch error:", err);
-      }
+      }finally {
+      setLoadingScore(false); // ✅ stop
+    }
     };
 
     fetchScore();
@@ -77,7 +82,8 @@ const PerformanceDashboard: React.FC = () => {
       <div className="dark:text-white flex flex-auto lg:flex-row gap-6 p-6 rounded-xl shadow-lg border border-gray-100">
         <div className="flex-[2] min-w-[320px] lg:pl-6 pt-6 lg:pt-0 flex flex-col gap-6">
           <div className="flex flex-col lg:flex-row gap-6 flex-1">
-            <HealthMeter healthScore={healthScore} />
+            
+            <HealthMeter healthScore={healthScore}  loading={loadingScore}  />
             <MonitoredMetricsCard
               selectedComponentId={selectedComponentId}
               allMetrics={allMetrics}

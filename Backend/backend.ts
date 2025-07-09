@@ -169,21 +169,34 @@ app.post('/ai/score', async (req: Request, res: Response) => {
   const extension = path.extname(relativeFilePath);
   const isComponent = Object.keys(metrics).length > 0;
 
-  const prompt = `
-You are a React code reviewer AI. Score the code from 0-100 based on optimization and maintainability.
-Return JSON: { "file": "filename", "score": number }
+ const prompt = `
+You are a React code reviewer AI.
+
+Score the code from 0-100 based on:
+- Optimization
+- Maintainability
+- React best practices
+
+🔒 IMPORTANT OUTPUT RULES:
+- Respond ONLY with valid **plain JSON**
+- Do NOT use markdown formatting
+- Do NOT include code fences (like \`\`\`json)
+- Do NOT include any explanation, comments, or extra text
+- The output must be strictly like: { "file": "Component.tsx", "score": 85 }
 
 --- FILE INFO ---
 Extension: ${extension}
-Type: ${isComponent ? 'React Component' : 'Utility/Other'}
+Type: ${isComponent ? 'React Component' : 'Utility / Other'}
 
 --- SOURCE CODE ---
 ${sourceCode}
 
 ${isComponent ? `--- METRICS ---\n${JSON.stringify(metrics)}\n` : ''}
+
 --- HOOK USAGE ---
 ${JSON.stringify(hookDetails)}
-`;
+`.trim();
+;
 
   try {
     const response = await ai.models.generateContent({
@@ -192,28 +205,35 @@ ${JSON.stringify(hookDetails)}
       config: { temperature: 0.2, maxOutputTokens: 4000 },
     });
 
-    const text = response.text || '';
+ const text = response.text || '';
 console.log('🔍 Gemini raw response:', text);
 
 try {
+  // Strip markdown fences
   const cleaned = text
     .replace(/```json/i, '')
     .replace(/```/, '')
     .trim();
 
+  // Optional: validate that it looks like JSON
+  if (!cleaned.startsWith('{') || !cleaned.endsWith('}')) {
+    throw new Error('Invalid JSON format');
+  }
+
   const parsed = JSON.parse(cleaned);
 
-  if (typeof parsed.score !== 'number') {
+  const score = typeof parsed.score === 'number' ? parsed.score : null;
+  if (score === null) {
     throw new Error('Score missing or invalid');
   }
 
-  res.json({ score: parsed.score });
-} catch (e) {
-  console.error('Invalid AI response:', e, text);
+  res.json({ score });
+} catch (err) {
+  console.error('Invalid AI response:', err, '\nRaw Text:', text);
   res.status(500).json({
-    error: 'AI returned invalid JSON',
+    error: 'AI returned invalid or incomplete JSON',
     raw: text,
-    details: e instanceof Error ? e.message : String(e),
+    details: err instanceof Error ? err.message : String(err),
   });
 }
 
