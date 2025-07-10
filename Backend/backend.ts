@@ -147,29 +147,31 @@ app.post('/ai/score', async (req: Request, res: Response) => {
   const { metrics, relativeFilePath, hookDetails } = req.body;
 
   if (!metrics || typeof metrics !== 'object') {
-    res.status(400).json({ error: 'Missing or invalid metrics' });
-    return ;
+     res.status(400).json({ error: 'Missing or invalid metrics' });
+     return
   }
   if (!relativeFilePath || typeof relativeFilePath !== 'string') {
-   res.status(400).json({ error: 'Missing or invalid relativeFilePath' });
-    return ;
+    res.status(400).json({ error: 'Missing or invalid relativeFilePath' });
+    return 
   }
   if (!hookDetails || !Array.isArray(hookDetails)) {
-    res.status(400).json({ error: 'Missing or invalid hookDetails' });
-    return ;
+     res.status(400).json({ error: 'Missing or invalid hookDetails' });
+     return
   }
 
   const fullPath = path.resolve('src', relativeFilePath);
   if (!fs.existsSync(fullPath)) {
-    res.status(404).json({ error: 'File not found' });
-    return ;
+     res.status(404).json({ error: 'File not found' });
+     return
   }
 
   const sourceCode = fs.readFileSync(fullPath, 'utf-8');
   const extension = path.extname(relativeFilePath);
-  const isComponent = Object.keys(metrics).length > 0;
 
- const prompt = `
+  // ✅ Treat every file as scorable (component or not)
+  const isComponent = true;
+
+  const prompt = `
 You are a React code reviewer AI.
 
 Score the code from 0-100 based on:
@@ -180,69 +182,42 @@ Score the code from 0-100 based on:
 🔒 IMPORTANT OUTPUT RULES:
 - Respond ONLY with valid **plain JSON**
 - Do NOT use markdown formatting
-- Do NOT include code fences (like \`\`\`json)
-- Do NOT include any explanation, comments, or extra text
-- The output must be strictly like: { "file": "Component.tsx", "score": 85 }
+- Do NOT include code fences
+- Do NOT include any explanation
 
 --- FILE INFO ---
 Extension: ${extension}
-Type: ${isComponent ? 'React Component' : 'Utility / Other'}
+Type: ${isComponent ? 'React Component or Utility' : 'Unknown'}
 
 --- SOURCE CODE ---
 ${sourceCode}
 
-${isComponent ? `--- METRICS ---\n${JSON.stringify(metrics)}\n` : ''}
+--- METRICS ---
+${JSON.stringify(metrics)}
 
 --- HOOK USAGE ---
 ${JSON.stringify(hookDetails)}
 `.trim();
-;
 
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: { temperature: 0.2, maxOutputTokens: 4000 },
+      config: { temperature: 0.2, maxOutputTokens: 6000 },
     });
 
- const text = response.text || '';
-console.log('🔍 Gemini raw response:', text);
+    const text = response.text || '';
+    const cleaned = text.replace(/```json/i, '').replace(/```/, '').trim();
+    const parsed = JSON.parse(cleaned);
 
-try {
-  // Strip markdown fences
-  const cleaned = text
-    .replace(/```json/i, '')
-    .replace(/```/, '')
-    .trim();
+    const score = typeof parsed.score === 'number' ? parsed.score : null;
+    if (score === null) throw new Error('Score missing or invalid');
 
-  // Optional: validate that it looks like JSON
-  if (!cleaned.startsWith('{') || !cleaned.endsWith('}')) {
-    throw new Error('Invalid JSON format');
-  }
-
-  const parsed = JSON.parse(cleaned);
-
-  const score = typeof parsed.score === 'number' ? parsed.score : null;
-  if (score === null) {
-    throw new Error('Score missing or invalid');
-  }
-
-  res.json({ score });
-} catch (err) {
-  console.error('Invalid AI response:', err, '\nRaw Text:', text);
-  res.status(500).json({
-    error: 'AI returned invalid or incomplete JSON',
-    raw: text,
-    details: err instanceof Error ? err.message : String(err),
-  });
-}
-
-
-  } catch (error) {
-    console.error('Gemini API error:', error);
+    res.json({ score });
+  } catch (err) {
     res.status(500).json({
-      error: 'Failed to get AI Score',
-      details: error instanceof Error ? error.message : String(error),
+      error: 'AI returned invalid or incomplete JSON',
+      details: err instanceof Error ? err.message : String(err),
     });
   }
 });

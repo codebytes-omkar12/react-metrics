@@ -25,7 +25,7 @@ const HealthMeter: React.FC<HealthMeterProps> = ({ healthScore = 0, loading = fa
       <div className="w-36 h-36 relative">
         {loading ? (
           <div className="flex items-center justify-center h-full w-full">
-            <Loader2 className="animate-spin h-10 w-10 text-blue-600" />
+            <Loader2 className="animate-spin h-36 w-36 text-green-600" />
           </div>
         ) : (
           <CircularProgressbar

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import HookDetailsTable from './HookDetailsTable';
-import { useFilePath } from '../context/FilePathContext';
+import { useFileContext } from '../context/FilePathContext';
 import { type HookDetail } from '../types/performance';
 
 interface Props {
@@ -8,7 +8,7 @@ interface Props {
 }
 
 export default function HookAnalysisDashboard({ onHookDetailsExtracted }: Props) {
-  const { filePath } = useFilePath();
+  const { filePath } = useFileContext();
   const [hookDetails, setHookDetails] = useState<HookDetail[] | null>(null);
 
   useEffect(() => {

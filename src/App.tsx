@@ -10,29 +10,18 @@ import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 import { SidebarProvider, useSidebar } from './context/SideBarContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { FilePathProvider } from './context/FilePathContext';
-import { useFilePath } from './context/FilePathContext';
+import { FileProvider } from './context/FilePathContext';
+import { useFileContext } from './context/FilePathContext';
 
 function AppLayout() {
-  const{filePath}=useFilePath()
+  const{filePath}=useFileContext()
  
   const { isSidebarOpen } = useSidebar();
 
   // Monitor App performance
-  usePerformanceMonitor({
-    id:"App",
-    displayName: "Application Root",
-    props: { filePath},
-  });
+ 
+  
 
-  const MonitoredPerformanceDashboard = withPerformanceMonitor(PerformanceDashboard, {id:"PerformanceDashBoard",
-    parentId: "App"
-  });
-  const MonitoredTest = withPerformanceMonitor(TestComponent, {
-  id: "TestComponent",
-  displayName: "Test Component",
-  parentId: "App", // Pass TestComponent as parent ID
-});
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
@@ -52,12 +41,12 @@ function AppLayout() {
               className="flex flex-wrap justify-center gap-6 mb-10 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-inner"
               style={{ display: "none" }}
             >
-              <MonitoredTest someProp="easy prop" />
+              <TestComponent someProp="easy prop" />
             </div>
 
             <hr className="my-10 border-t-2 border-gray-300 dark:border-gray-600 w-full" />
 
-            <MonitoredPerformanceDashboard />
+            <PerformanceDashboard />
           </div>
         </main>
       </div>
@@ -76,9 +65,9 @@ export default function App() {
       <PerformanceProvider>
         <ThemeProvider>
           <SidebarProvider>
-            <FilePathProvider>
+            <FileProvider>
               <MonitoredAppLayout />
-            </FilePathProvider>
+            </FileProvider>
           </SidebarProvider>
         </ThemeProvider>
       </PerformanceProvider>

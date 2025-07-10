@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Folder, FileText, ChevronDown, ChevronRight } from "lucide-react";
 import { useSidebar } from "../context/SideBarContext";
-import { useFilePath } from "../context/FilePathContext";
+import { useFileContext } from "../context/FilePathContext";
+
 
 interface TreeNode {
   name: string;
@@ -46,7 +47,8 @@ const Sidebar: React.FC = () => {
   const [treeData, setTreeData] = useState<TreeNode[]>([]);
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
-  const { setFilePath } = useFilePath(); // ✅ Using context
+  const { setFilePath } = useFileContext(); // ✅ Using context
+  
 
   const toggleFolder = (path: string) => {
     setOpenFolders((prev) => {

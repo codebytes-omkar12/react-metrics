@@ -1,23 +1,32 @@
-import React  from "react";
-import { useState,createContext,useContext, type ReactNode } from "react";
+import { useState, createContext, useContext, type ReactNode } from "react";
+import { getComponentIdFromPath } from "../utils/getComponentIdFromPath";
 
-interface FilePatContextType{
- filePath:string|null;
- setFilePath: React.Dispatch<React.SetStateAction<string | null>>;
+interface FileContextType {
+  filePath: string | null;
+  componentId: string | null;
+  setFilePath: (path: string) => void;
 }
 
-const FilePathContext=createContext<FilePatContextType|undefined>(undefined);
+const FileContext = createContext<FileContextType | undefined>(undefined);
 
-export const FilePathProvider=({children}:{children:ReactNode})=>{
-    const [filePath,setFilePath]=useState<string|null>(null);
-    return(
-         <FilePathContext.Provider value={{ filePath, setFilePath }}>
+export const FileProvider = ({ children }: { children: ReactNode }) => {
+  const [filePath, setFilePathState] = useState<string | null>(null);
+  const [componentId, setComponentId] = useState<string | null>(null);
+
+  const setFilePath = (path: string) => {
+    setFilePathState(path);
+    setComponentId(getComponentIdFromPath(path));
+  };
+
+  return (
+    <FileContext.Provider value={{ filePath, componentId, setFilePath }}>
       {children}
-    </FilePathContext.Provider>
-    )
-}
-export const useFilePath = () => {
-  const context = useContext(FilePathContext);
-  if (!context) throw new Error("useFilePath must be used within FilePathProvider");
+    </FileContext.Provider>
+  );
+};
+
+export const useFileContext = () => {
+  const context = useContext(FileContext);
+  if (!context) throw new Error("useFileContext must be used within FileProvider");
   return context;
 };
