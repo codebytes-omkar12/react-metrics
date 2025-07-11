@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Folder, FileText, ChevronDown, ChevronRight } from "lucide-react";
 import { useSidebar } from "../context/SideBarContext";
 import { useFilePath } from "../context/FilePathContext";
+import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
+
 
 interface TreeNode {
   name: string;
@@ -47,72 +49,90 @@ const Sidebar: React.FC = () => {
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
   const { setFilePath } = useFilePath(); // ✅ Using context
+  const [performanceConfig, setPerformanceConfig]= useState({ });
+
+  const renderComponentPerformance = async (curentNode: any) => {
+    // 1. get the node
+    // 2. get the path 
+    // 3. Important component dynamically
+    // 4. set all the setting in  the config.
+console.log(curentNode, 'curentNode,,,,,,,,,,,,');
+const dynamicComponent = await import("./"+curentNode.path)
+console.log(dynamicComponent, 'import(curentNode.path),,,,,,,,,,,,');
+
+  // const MonitoredTest = withPerformanceMonitor(, {
+  //   id: "TestComponent",
+  //   displayName: "Test Component",
+  //   parentId: "App", // Pass TestComponent as parent ID
+  // });
+
+  }
 
   const toggleFolder = (path: string) => {
-    setOpenFolders((prev) => {
-      const newSet = new Set(prev);
-      newSet.has(path) ? newSet.delete(path) : newSet.add(path);
-      return newSet;
-    });
+      setOpenFolders((prev) => {
+        const newSet = new Set(prev);
+        newSet.has(path) ? newSet.delete(path) : newSet.add(path);
+        return newSet;
+      });
   };
 
   const renderTree = (nodes: TreeNode[]) => {
     const sortedNodes = [...nodes].sort((a, b) => {
       if (a.type !== b.type) return a.type === "folder" ? -1 : 1;
-      return a.name.localeCompare(b.name);
+    return a.name.localeCompare(b.name);
     });
 
     return sortedNodes.map((node) => {
       const isOpen = openFolders.has(node.path);
-      const isFolder = node.type === "folder";
+    const isFolder = node.type === "folder";
 
-      return (
-        <div key={node.path} className="pl-2">
-          <div
-            className={`flex items-center space-x-2 py-1 px-1 cursor-pointer rounded transition-colors ${
-              selectedFilePath === node.path
-                ? "bg-blue-700 text-white"
-                : "hover:bg-gray-100 dark:hover:bg-gray-700"
-            }`}
-            onClick={() => {
-              if (isFolder) {
-                toggleFolder(node.path);
-              } else {
-                setSelectedFilePath(node.path);
-                setFilePath(node.path); // ✅ Set globally
-              }
-            }}
-          >
-            {isFolder ? (
-              <>
-                {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                <Folder size={16} />
-              </>
-            ) : (
-              <FileText size={16} />
-            )}
-            {isSidebarOpen && <span className="truncate">{node.name}</span>}
-          </div>
+    return (
+    <div key={node.path} className="pl-2">
+      <div
+        className={`flex items-center space-x-2 py-1 px-1 cursor-pointer rounded transition-colors ${selectedFilePath === node.path
+          ? "bg-blue-700 text-white"
+          : "hover:bg-gray-100 dark:hover:bg-gray-700"
+          }`}
+        onClick={() => {
+          if (isFolder) {
+            toggleFolder(node.path);
+          } else {
+            renderComponentPerformance(node)
+            setSelectedFilePath(node.path);
+            setFilePath(node.path); // ✅ Set globally
+          }
+        }}
+      >
+        {isFolder ? (
+          <>
+            {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            <Folder size={16} />
+          </>
+        ) : (
+          <FileText size={16} />
+        )}
+        {isSidebarOpen && <span className="truncate">{node.name}</span>}
+      </div>
 
-          {isFolder && isOpen && node.children && (
-            <div className="pl-4">{renderTree(node.children)}</div>
-          )}
-        </div>
-      );
+      {isFolder && isOpen && node.children && (
+        <div className="pl-4">{renderTree(node.children)}</div>
+      )}
+    </div>
+    );
     });
   };
 
   useEffect(() => {
-    fetch("http://localhost:5001/list-files")
-      .then((res) => res.json())
-      .then((filePaths: string[]) => {
-        const tree = buildTree(filePaths);
-        setTreeData(tree);
-      })
-      .catch((err) => console.error("Failed to fetch file list:", err));
+      fetch("http://localhost:5001/list-files")
+        .then((res) => res.json())
+        .then((filePaths: string[]) => {
+          const tree = buildTree(filePaths);
+          setTreeData(tree);
+        })
+        .catch((err) => console.error("Failed to fetch file list:", err));
   }, []);
 
-  return (
+    return (
     <aside
       className={`
         transition-all duration-300 ease-in-out
@@ -126,9 +146,8 @@ const Sidebar: React.FC = () => {
     >
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
         <span
-          className={`text-lg font-bold transition-opacity duration-300 ${
-            isSidebarOpen ? "opacity-100" : "opacity-0"
-          }`}
+          className={`text-lg font-bold transition-opacity duration-300 ${isSidebarOpen ? "opacity-100" : "opacity-0"
+            }`}
         >
           Explorer
         </span>
@@ -136,7 +155,7 @@ const Sidebar: React.FC = () => {
 
       <div className="px-2 py-4">{renderTree(treeData)}</div>
     </aside>
-  );
+    );
 };
 
-export default Sidebar;
+    export default Sidebar;

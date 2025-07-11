@@ -30,13 +30,17 @@ function listAllCodeFiles(dir: string, basePath = ''): string[] {
 
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
+    console.log(fullPath, 'llllllllllll');
+    
     const relativePath = path.join(basePath, entry.name);
     if (entry.isDirectory()) {
       results = results.concat(listAllCodeFiles(fullPath, relativePath));
     } else if (entry.isFile() && allowedExts.some(ext => entry.name.endsWith(ext))) {
-      results.push(relativePath.replace(/\\/g, '/'));
+      results.push(fullPath.replace(/\\/g, '/'));
     }
   }
+  console.log(results, 'llllllllllllllllllllll');
+  
   return results;
 }
 
