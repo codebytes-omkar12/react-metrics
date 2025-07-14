@@ -12,14 +12,23 @@ function withPerformanceMonitor<P extends object>(
   monitorArgs: MonitorArgs = {}
 ) {
   const fallbackName =
-    WrappedComponent.displayName || WrappedComponent.name || "UnknownComponent";
+    (WrappedComponent as any).displayName || WrappedComponent.name || "UnknownComponent";
 
   const displayName = monitorArgs.displayName || fallbackName;
-  const id = monitorArgs.id || displayName; // ✅ use displayName as fallback ID
+  const id = monitorArgs.id || displayName;
+
+  // ✅ Runtime check: skip if WrappedComponent is not a plain function
+  if (typeof WrappedComponent !== "function") {
+    console.warn(
+      `[withPerformanceMonitor] Skipping wrap: Expected a React component function but got ${typeof WrappedComponent}`,
+      WrappedComponent
+    );
+    return WrappedComponent;
+  }
 
   const WrappedWithMonitor: React.FC<P> = (props) => {
     usePerformanceMonitor({
-      id,                         // ✅ This guarantees ID is never undefined
+      id,
       displayName,
       parentId: monitorArgs.parentId,
       props,

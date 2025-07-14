@@ -30,17 +30,16 @@ function listAllCodeFiles(dir: string, basePath = ''): string[] {
 
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
-    console.log(fullPath, 'llllllllllll');
-    
     const relativePath = path.join(basePath, entry.name);
+
     if (entry.isDirectory()) {
       results = results.concat(listAllCodeFiles(fullPath, relativePath));
     } else if (entry.isFile() && allowedExts.some(ext => entry.name.endsWith(ext))) {
-      results.push(fullPath.replace(/\\/g, '/'));
+      // 🟡 Return only relative path
+      results.push(relativePath.replace(/\\/g, '/')); // Normalize slashes for Windows
     }
   }
-  console.log(results, 'llllllllllllllllllllll');
-  
+
   return results;
 }
 
@@ -121,9 +120,11 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/list-files', (req, res) => {
-  const files = listAllCodeFiles(path.resolve('src'));
+  const rootDir = path.join(__dirname, '..',"src"); // or use process.cwd() if inside project root
+  const files = listAllCodeFiles(rootDir, '');
   res.json(files);
 });
+
 
 app.post('/analyze', (req: Request, res: Response) => {
   const { relativeFilePath } = req.body;

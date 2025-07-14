@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { findPathInTree } from '../utils/findPathInTree';
 import { type IAllComponentMetrics, type IHierarchyNode } from '../types/performance';
 
+
 interface SelectedComponentDetailProps {
   selectedComponentId: string | null;
   allMetrics: IAllComponentMetrics;

@@ -57,6 +57,7 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions) {
   });
 
   const { addOrUpdateMetrics } = usePerformanceDispatch();
+// console.log("[MONITOR] usePerformanceMonitor called for:", id);
 
   useEffect(() => {
     const prevMetrics = metricsRef.current;

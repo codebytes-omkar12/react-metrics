@@ -5,7 +5,7 @@ import { useMemoryMonitor } from "../hooks/useMemoryMonitor";
 import SelectedComponentDetails from "./SelectedComponentDetails";
 import MemoryComponent from "./MemoryComponent";
 import { useBuildHierarchyTree } from "../utils/useBuildHierarchyTree";
-import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
+
 import HookAnalysisDashboard from '../components/HookAnalysisDashboard';
 import HealthMeter from "./HealthMeter";
 import { useFilePath } from '../context/FilePathContext';
@@ -74,8 +74,7 @@ const PerformanceDashboard: React.FC = () => {
     fetchScore();
   }, [filePath, hookReady, selectedComponentId]);
 
-  const MonitoredMemoryComponent = withPerformanceMonitor(MemoryComponent, { parentId: "PerformanceDashboard" });
-  const MonitoredMetricsCard = withPerformanceMonitor(SelectedComponentDetails, { parentId: "PerformanceDashboard" });
+
 
   return (
     <div>
@@ -84,7 +83,7 @@ const PerformanceDashboard: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-6 flex-1">
             
             <HealthMeter healthScore={healthScore}  loading={loadingScore}  />
-            <MonitoredMetricsCard
+            <SelectedComponentDetails
               selectedComponentId={selectedComponentId}
               allMetrics={allMetrics}
               buildHierarchyTree={buildHierarchyTree}
@@ -93,7 +92,7 @@ const PerformanceDashboard: React.FC = () => {
               relativeFilePath={filePath}
               hookDetails={hookDetails}
             />
-            <MonitoredMemoryComponent />
+            <MemoryComponent />
           </div>
         </div>
       </div>

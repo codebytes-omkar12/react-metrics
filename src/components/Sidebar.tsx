@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Folder, FileText, ChevronDown, ChevronRight } from "lucide-react";
 import { useSidebar } from "../context/SideBarContext";
 import { useFilePath } from "../context/FilePathContext";
-import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
+
 
 
 interface TreeNode {
@@ -49,24 +49,7 @@ const Sidebar: React.FC = () => {
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
   const { setFilePath } = useFilePath(); // ✅ Using context
-  const [performanceConfig, setPerformanceConfig]= useState({ });
-
-  const renderComponentPerformance = async (curentNode: any) => {
-    // 1. get the node
-    // 2. get the path 
-    // 3. Important component dynamically
-    // 4. set all the setting in  the config.
-console.log(curentNode, 'curentNode,,,,,,,,,,,,');
-const dynamicComponent = await import("./"+curentNode.path)
-console.log(dynamicComponent, 'import(curentNode.path),,,,,,,,,,,,');
-
-  // const MonitoredTest = withPerformanceMonitor(, {
-  //   id: "TestComponent",
-  //   displayName: "Test Component",
-  //   parentId: "App", // Pass TestComponent as parent ID
-  // });
-
-  }
+ 
 
   const toggleFolder = (path: string) => {
       setOpenFolders((prev) => {
@@ -97,7 +80,7 @@ console.log(dynamicComponent, 'import(curentNode.path),,,,,,,,,,,,');
           if (isFolder) {
             toggleFolder(node.path);
           } else {
-            renderComponentPerformance(node)
+
             setSelectedFilePath(node.path);
             setFilePath(node.path); // ✅ Set globally
           }

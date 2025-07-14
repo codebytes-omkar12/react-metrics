@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
-import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
 import ChildComponent from "./ChildComponent";
 
-const MonitoredChild = withPerformanceMonitor(ChildComponent, {
-  id: "ChildComponent",
-  displayName: "Child Component",
-  parentId: "TestComponent",
-});
+
 
 interface TestComponentProps {
   someProp: string;
@@ -30,7 +25,7 @@ const TestComponent: React.FC<TestComponentProps> = ({ someProp }) => {
       <p className="text-gray-700">
         Prop (someProp): <span className="font-semibold">{someProp}</span>
       </p>
-      <MonitoredChild someProp={someProp} />
+    <ChildComponent someProp=""/>
     </div>
   );
 };

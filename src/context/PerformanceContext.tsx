@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { useContext,createContext,useState,useCallback,useEffect,useMemo } from "react";
 import type {PropsWithChildren} from "react";
 import { type IAllComponentMetrics, type IMetrics, type IBundleMetrics, type IMemoryMetrics } from "../types/performance";

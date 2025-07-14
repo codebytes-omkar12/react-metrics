@@ -4,7 +4,8 @@ import PerformanceDashboard from './components/PerformanceDashBoard';
 import { PerformanceProvider } from './context/PerformanceContext';
 import TestComponent from './components/TestComponent';
 import { usePerformanceMonitor } from './hooks/usePerformanceMonitor';
-import withPerformanceMonitor from './HOC/withPerformanceMonitor';
+
+
 import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
@@ -25,14 +26,6 @@ function AppLayout() {
     props: { filePath},
   });
 
-  const MonitoredPerformanceDashboard = withPerformanceMonitor(PerformanceDashboard, {id:"PerformanceDashBoard",
-    parentId: "App"
-  });
-//   const MonitoredTest = withPerformanceMonitor(TestComponent, {
-//   id: "TestComponent",
-//   displayName: "Test Component",
-//   parentId: "App", // Pass TestComponent as parent ID
-// });
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
@@ -52,12 +45,12 @@ function AppLayout() {
               className="flex flex-wrap justify-center gap-6 mb-10 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-inner"
               style={{ display: "none" }}
             >
-              {/* <MonitoredTest someProp="easy prop" /> */}
+              <TestComponent someProp="easy prop" />
             </div>
 
             <hr className="my-10 border-t-2 border-gray-300 dark:border-gray-600 w-full" />
 
-            {/* <MonitoredPerformanceDashboard /> */}
+            <PerformanceDashboard />
           </div>
         </main>
       </div>
@@ -65,10 +58,7 @@ function AppLayout() {
   );
 }
 
-const MonitoredAppLayout = withPerformanceMonitor(AppLayout, {
-  id: "App",
-  displayName: "Application Root"
-});
+
 
 export default function App() {
   return (
@@ -77,7 +67,7 @@ export default function App() {
         <ThemeProvider>
           <SidebarProvider>
             <FilePathProvider>
-              <MonitoredAppLayout />
+              <AppLayout />
             </FilePathProvider>
           </SidebarProvider>
         </ThemeProvider>
