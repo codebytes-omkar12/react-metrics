@@ -47,7 +47,6 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions) {
   const metricsRef = useRef<IMetrics>({
     mountTime: 0,
     lastRenderDuration: 0,
-    totalRenderDuration: 0,
     reRenders: 0,
     propsChanged: {},
     _prevProps: undefined,
@@ -76,8 +75,6 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions) {
       ...prevMetrics,
       mountTime: mountDuration,
       lastRenderDuration: calculatedLastRenderDuration / 1000,
-      totalRenderDuration:
-        prevMetrics.totalRenderDuration + calculatedLastRenderDuration,
       reRenders: renderCountRef.current,
       propsChanged: detectedPropChange,
       _prevProps: props,

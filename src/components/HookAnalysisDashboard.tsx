@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import HookDetailsTable from './HookDetailsTable';
 import { useFilePath } from '../context/FilePathContext';
@@ -7,7 +8,7 @@ interface Props {
   onHookDetailsExtracted: (details: HookDetail[]) => void;
 }
 
-export default function HookAnalysisDashboard({ onHookDetailsExtracted }: Props) {
+function HookAnalysisDashboard({ onHookDetailsExtracted }: Props) {
   const { filePath } = useFilePath();
   const [hookDetails, setHookDetails] = useState<HookDetail[] | null>(null);
 
@@ -94,3 +95,4 @@ export default function HookAnalysisDashboard({ onHookDetailsExtracted }: Props)
     </div>
   );
 }
+export default  React.memo(HookAnalysisDashboard)

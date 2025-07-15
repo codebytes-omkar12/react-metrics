@@ -1,7 +1,7 @@
 import React from 'react';
 import { type HookDetail } from '../types/performance';
 
-export default function HookDetailsTable({ data }: { data: HookDetail[] }) {
+ function HookDetailsTable({ data }: { data: HookDetail[] }) {
   if (!data.length)
     return (
       <p className="text-gray-500 dark:text-gray-300 mt-4 p-4 border border-dashed border-gray-300 dark:border-gray-600 rounded-md text-sm text-center">
@@ -38,3 +38,5 @@ export default function HookDetailsTable({ data }: { data: HookDetail[] }) {
     </div>
   );
 }
+
+export default React.memo(HookDetailsTable);

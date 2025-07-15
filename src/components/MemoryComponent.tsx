@@ -3,6 +3,7 @@ import { useMemoryMonitor } from "../hooks/useMemoryMonitor";
 import { usePerformanceMetrics } from "../context/PerformanceContext";
 
 
+
 const MemoryComponent: React.FC = () => {
   function bytesToMB(bytes: number) {
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
@@ -86,4 +87,4 @@ const MemoryComponent: React.FC = () => {
   );
 };
 
-export default MemoryComponent;
+export default React.memo(MemoryComponent);

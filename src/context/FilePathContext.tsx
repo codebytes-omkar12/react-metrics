@@ -1,12 +1,12 @@
 import React  from "react";
 import { useState,createContext,useContext, type ReactNode } from "react";
 
-interface FilePatContextType{
+interface FilePathContextType{
  filePath:string|null;
  setFilePath: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
-const FilePathContext=createContext<FilePatContextType|undefined>(undefined);
+const FilePathContext=createContext<FilePathContextType|undefined>(undefined);
 
 export const FilePathProvider=({children}:{children:ReactNode})=>{
     const [filePath,setFilePath]=useState<string|null>(null);

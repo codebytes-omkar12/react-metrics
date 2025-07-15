@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef} from "react";
 import PerformanceCharts from "./PerformanceCharts";
 import { usePerformanceMetrics } from "../context/PerformanceContext";
 import { useMemoryMonitor } from "../hooks/useMemoryMonitor";
@@ -13,7 +13,7 @@ import { getComponentIdFromPath } from "../utils/getComponentIdFromPath";
 
 
 
-const PerformanceDashboard: React.FC = () => {
+const PerformanceDashboard: React.FC = React.memo(() => {
   const { filePath } = useFilePath(); // ⬅ get context setter
   const { allMetrics, currentMemoryMetrics } = usePerformanceMetrics();
   const [aiSummary, setAiSummary] = useState<string | null>(null);
@@ -43,36 +43,51 @@ const PerformanceDashboard: React.FC = () => {
 
   // 🧠 Optimized AI Score Fetch (prevents unnecessary calls)
   useEffect(() => {
-    if (!filePath || !hookReady || !selectedComponentId) return;
+  if (!filePath || !hookReady || !selectedComponentId) return;
+ console.log("hello")
+  const currentRequestId = Date.now(); // or just a counter
+  latestRequestId.current = currentRequestId; // store latest request ID
 
-    const fetchScore = async () => {
-      setLoadingScore(true); 
-      try {
-        const response = await fetch("http://localhost:5001/ai/score", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            metrics: allMetrics[selectedComponentId] ?? {},
-            relativeFilePath: filePath,
-            hookDetails,
-          }),
-        });
+  const fetchScore = async () => {
+    setLoadingScore(true);
+    try {
+      const response = await fetch("http://localhost:5001/ai/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          metrics: allMetrics[selectedComponentId] ?? {},
+          relativeFilePath: filePath,
+          hookDetails,
+        }),
+      });
 
-        const data = await response.json();
+      const data = await response.json();
+
+      // ✅ only set if it's the most recent request
+      if (latestRequestId.current === currentRequestId) {
         if (typeof data?.score === "number") {
           setHealthScore(data.score);
         } else {
           console.warn("Missing score in response", data);
         }
-      } catch (err) {
+      }
+    } catch (err) {
+      if (latestRequestId.current === currentRequestId) {
         console.error("AI Score fetch error:", err);
-      }finally {
-      setLoadingScore(false); // ✅ stop
+      }
+    } finally {
+      if (latestRequestId.current === currentRequestId) {
+        setLoadingScore(false);
+      }
     }
-    };
+  };
 
-    fetchScore();
-  }, [filePath, hookReady, selectedComponentId]);
+  fetchScore();
+
+}, [filePath, hookReady, selectedComponentId]);
+
+// outside useEffect, define this once
+const latestRequestId = useRef<number>(0);
 
 
 
@@ -149,7 +164,7 @@ const PerformanceDashboard: React.FC = () => {
       )}
     </div>
   );
-};
+});
 
 PerformanceDashboard.displayName = "PerformanceDashboard";
 export default PerformanceDashboard;

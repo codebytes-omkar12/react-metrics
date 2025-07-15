@@ -1,13 +1,13 @@
 export interface IMetrics {
   mountTime: number;
   lastRenderDuration: number;
-  totalRenderDuration: number;
   reRenders: number;
   propsChanged: Record<string, IPropChange>;
   _prevProps?: Record<string, any> | undefined
   parentId?: string;
   id: string;
   displayName: string;
+  
 }
 
 export type PerformanceConfig = {

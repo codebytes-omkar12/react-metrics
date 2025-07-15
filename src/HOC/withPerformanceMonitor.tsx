@@ -1,15 +1,10 @@
 import React from "react";
 import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
-
-type MonitorArgs = {
-  id?: string;
-  displayName?: string;
-  parentId?: string;
-};
+import { ParentMonitorProvider, useParentId } from "../context/ParentMonitorContext";
 
 function withPerformanceMonitor<P extends object>(
   WrappedComponent: React.ComponentType<P>,
-  monitorArgs: MonitorArgs = {}
+  monitorArgs: { id?: string; displayName?: string ;parentId?: string;} = {}
 ) {
   const fallbackName =
     (WrappedComponent as any).displayName || WrappedComponent.name || "UnknownComponent";
@@ -17,24 +12,21 @@ function withPerformanceMonitor<P extends object>(
   const displayName = monitorArgs.displayName || fallbackName;
   const id = monitorArgs.id || displayName;
 
-  // ✅ Runtime check: skip if WrappedComponent is not a plain function
-  if (typeof WrappedComponent !== "function") {
-    console.warn(
-      `[withPerformanceMonitor] Skipping wrap: Expected a React component function but got ${typeof WrappedComponent}`,
-      WrappedComponent
-    );
-    return WrappedComponent;
-  }
-
   const WrappedWithMonitor: React.FC<P> = (props) => {
+    const parentId = useParentId(); // 🟢 Dynamically get parent ID
+
     usePerformanceMonitor({
       id,
       displayName,
-      parentId: monitorArgs.parentId,
+      parentId: monitorArgs.parentId ?? (parentId ?? undefined),
       props,
     });
 
-    return <WrappedComponent {...props} />;
+    return (
+      <ParentMonitorProvider id={id}>
+        <WrappedComponent {...props} />
+      </ParentMonitorProvider>
+    );
   };
 
   WrappedWithMonitor.displayName = `WithPerformanceMonitor(${displayName})`;

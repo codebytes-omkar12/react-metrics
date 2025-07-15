@@ -16,7 +16,7 @@ interface PerformanceChartProps {
 const bytesToMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(2);
 const formatTimeStamp = (timeStamp: number) => `${(timeStamp / 1000).toFixed(2)}s`;
 
-const PerformanceCharts: React.FC<PerformanceChartProps> = React.memo(({
+const PerformanceCharts: React.FC<PerformanceChartProps> = ({
   allMetrics,
   currentMemoryMetrics,
   isMemoryMonitoringAvailable
@@ -135,6 +135,6 @@ const PerformanceCharts: React.FC<PerformanceChartProps> = React.memo(({
       </div>
     </div>
   );
-});
+};
 
-export default PerformanceCharts;
+export default React.memo(PerformanceCharts);

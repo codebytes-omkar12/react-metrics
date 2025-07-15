@@ -1,7 +1,10 @@
 import React from "react";
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-import { Loader2 } from "lucide-react"; // Optional: Any loading spinner icon
+import { LoaderPinwheel } from 'lucide-react';
+import { useEffect } from 'react';
+
+
 
 interface HealthMeterProps {
   healthScore?: number;
@@ -11,6 +14,9 @@ interface HealthMeterProps {
 const HealthMeter: React.FC<HealthMeterProps> = ({ healthScore = 0, loading = false }) => {
   let color = 'red';
   let label = 'Bad';
+useEffect(() => {
+  console.log("HealthMeter rendered");
+});
 
   if (healthScore >= 80) {
     color = 'green';
@@ -21,11 +27,12 @@ const HealthMeter: React.FC<HealthMeterProps> = ({ healthScore = 0, loading = fa
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow flex flex-col items-center justify-center min-w-[160px]">
+    <div className="dark:bg-gray-900 rounded-xl p-4  flex flex-col items-center justify-center min-w-[160px]">
       <div className="w-36 h-36 relative">
         {loading ? (
           <div className="flex items-center justify-center h-full w-full">
-            <Loader2 className="animate-spin h-10 w-10 text-blue-600" />
+            <LoaderPinwheel className="animate-spin-color h-40 w-40" />
+
           </div>
         ) : (
           <CircularProgressbar
