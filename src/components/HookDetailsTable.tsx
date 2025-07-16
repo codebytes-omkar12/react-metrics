@@ -39,4 +39,4 @@ import { type HookDetail } from '../types/performance';
   );
 }
 
-export default React.memo(HookDetailsTable);
+export default HookDetailsTable;

@@ -5,11 +5,10 @@ import { useMemoryMonitor } from "../hooks/useMemoryMonitor";
 import SelectedComponentDetails from "./SelectedComponentDetails";
 import MemoryComponent from "./MemoryComponent";
 import { useBuildHierarchyTree } from "../utils/useBuildHierarchyTree";
-
-import HookAnalysisDashboard from '../components/HookAnalysisDashboard';
 import HealthMeter from "./HealthMeter";
 import { useFilePath } from '../context/FilePathContext';
 import { getComponentIdFromPath } from "../utils/getComponentIdFromPath";
+import { useHookAnalysis } from "../context/HookAnalysisContext";
 
 
 
@@ -19,9 +18,9 @@ const PerformanceDashboard: React.FC = React.memo(() => {
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
-  const [hookDetails, setHookDetails] = useState<any[]>([]);
+ 
   const [healthScore, setHealthScore] = useState(0);
-   const [hookReady, setHookReady] = useState(false); // ✅
+  // ✅
    const [loadingScore, setLoadingScore] = useState(false); // 🔄
 
 
@@ -40,11 +39,11 @@ const PerformanceDashboard: React.FC = React.memo(() => {
       console.log("Normalized ID:", normalizedId);
     }
   }, [filePath]);
-
+const { hookDetails, hookReady } = useHookAnalysis();
   // 🧠 Optimized AI Score Fetch (prevents unnecessary calls)
   useEffect(() => {
   if (!filePath || !hookReady || !selectedComponentId) return;
- console.log("hello")
+ 
   const currentRequestId = Date.now(); // or just a counter
   latestRequestId.current = currentRequestId; // store latest request ID
 
@@ -156,12 +155,7 @@ const latestRequestId = useRef<number>(0);
         isMemoryMonitoringAvailable={isMemoryMonitoringAvailable}
       />
 
-      {filePath && (
-        <HookAnalysisDashboard   onHookDetailsExtracted={(details) => {
-            setHookDetails(details);
-            setHookReady(true); // ✅ trigger AI scoring once ready
-          }} />
-      )}
+      
     </div>
   );
 });

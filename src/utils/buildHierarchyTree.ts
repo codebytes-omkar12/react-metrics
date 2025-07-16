@@ -27,8 +27,13 @@ export const buildHierarchyTree = (allMetrics: IAllComponentMetrics): IHierarchy
 
   // Step 3: Assign componentPath and sort children
   const buildPaths = (node: IHierarchyNode, parentPath = "") => {
-    node.componentPath = parentPath ? `${parentPath} > ${node.displayName}` : node.displayName;
-    node.children.sort((a, b) => a.displayName.localeCompare(b.displayName));
+    const currentDisplayName = node.displayName || 'Unnamed Component';
+    node.componentPath = parentPath ? `${parentPath} > ${node.displayName}` : currentDisplayName;
+   node.children.sort((a, b) => {
+      const nameA = a.displayName || ''; // Fallback to empty string
+      const nameB = b.displayName || ''; // Fallback to empty string
+      return nameA.localeCompare(nameB);
+    });
     node.children.forEach((child) => buildPaths(child, node.componentPath));
   };
 
@@ -40,5 +45,9 @@ export const buildHierarchyTree = (allMetrics: IAllComponentMetrics): IHierarchy
     rootNodes.forEach((node) => buildPaths(node));
   }
 
-  return rootNodes.sort((a, b) => a.displayName.localeCompare(b.displayName));
+ return rootNodes.sort((a, b) => {
+    const nameA = a.displayName || ''; // Fallback to empty string
+    const nameB = b.displayName || ''; // Fallback to empty string
+    return nameA.localeCompare(nameB);
+  });
 };

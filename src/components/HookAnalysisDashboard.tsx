@@ -1,16 +1,16 @@
-import React from 'react';
+
 import { useState, useEffect } from 'react';
 import HookDetailsTable from './HookDetailsTable';
 import { useFilePath } from '../context/FilePathContext';
 import { type HookDetail } from '../types/performance';
+import { useHookAnalysis } from '../context/HookAnalysisContext';
 
-interface Props {
-  onHookDetailsExtracted: (details: HookDetail[]) => void;
-}
 
-function HookAnalysisDashboard({ onHookDetailsExtracted }: Props) {
+
+function HookAnalysisDashboard() {
   const { filePath } = useFilePath();
-  const [hookDetails, setHookDetails] = useState<HookDetail[] | null>(null);
+  const { setHookDetails, setHookReady } = useHookAnalysis();
+  const [hookDetails, setLocalHookDetails] = useState<HookDetail[] | null>(null);
 
   useEffect(() => {
     if (!filePath) return;
@@ -26,17 +26,20 @@ function HookAnalysisDashboard({ onHookDetailsExtracted }: Props) {
         const data = await res.json();
 
         if (Array.isArray(data)) {
-          setHookDetails(data);
-          onHookDetailsExtracted(data); // ✅ notify parent when complete
+          setLocalHookDetails(data);
+          setHookDetails(data);      // ✅ set context
+          setHookReady(true);        // ✅ mark ready
         } else {
           console.error("Invalid hook data:", data);
+          setLocalHookDetails([]);
           setHookDetails([]);
-          onHookDetailsExtracted([]);
+          setHookReady(false);
         }
       } catch (err) {
         console.error("Error analyzing hooks:", err);
+        setLocalHookDetails([]);
         setHookDetails([]);
-        onHookDetailsExtracted([]);
+        setHookReady(false);
       }
     };
 
@@ -95,4 +98,4 @@ function HookAnalysisDashboard({ onHookDetailsExtracted }: Props) {
     </div>
   );
 }
-export default  React.memo(HookAnalysisDashboard)
+export default  HookAnalysisDashboard;

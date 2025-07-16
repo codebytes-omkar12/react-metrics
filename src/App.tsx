@@ -4,8 +4,6 @@ import PerformanceDashboard from './components/PerformanceDashBoard';
 import { PerformanceProvider } from './context/PerformanceContext';
 import TestComponent from './components/TestComponent';
 import { usePerformanceMonitor } from './hooks/usePerformanceMonitor';
-
-
 import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
@@ -13,6 +11,8 @@ import { SidebarProvider, useSidebar } from './context/SideBarContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { FilePathProvider } from './context/FilePathContext';
 import { useFilePath } from './context/FilePathContext';
+import HookAnalysisDashboard from './components/HookAnalysisDashboard';
+import { HookAnalysisProvider } from './context/HookAnalysisContext';
 
 function AppLayout() {
   const{filePath}=useFilePath()
@@ -50,7 +50,10 @@ function AppLayout() {
 
             <hr className="my-10 border-t-2 border-gray-300 dark:border-gray-600 w-full" />
 
-            <PerformanceDashboard />
+            <PerformanceDashboard/>
+            {filePath && (
+        <HookAnalysisDashboard/>
+      )}
           </div>
         </main>
       </div>
@@ -67,7 +70,9 @@ export default function App() {
         <ThemeProvider>
           <SidebarProvider>
             <FilePathProvider>
+              <HookAnalysisProvider>
               <AppLayout />
+              </HookAnalysisProvider>
             </FilePathProvider>
           </SidebarProvider>
         </ThemeProvider>

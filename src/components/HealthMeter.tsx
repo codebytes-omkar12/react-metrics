@@ -11,12 +11,10 @@ interface HealthMeterProps {
   loading?: boolean;
 }
 
-const HealthMeter: React.FC<HealthMeterProps> = ({ healthScore = 0, loading = false }) => {
+const HealthMeter: React.FC<HealthMeterProps> = React.memo(({ healthScore = 0, loading = false }) => {
   let color = 'red';
   let label = 'Bad';
-useEffect(() => {
-  console.log("HealthMeter rendered");
-});
+
 
   if (healthScore >= 80) {
     color = 'green';
@@ -55,6 +53,6 @@ useEffect(() => {
       )}
     </div>
   );
-};
+});
 
 export default HealthMeter;
