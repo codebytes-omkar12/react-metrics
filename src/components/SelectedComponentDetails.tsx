@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
-import { type IAllComponentMetrics, type IHierarchyNode } from '../types/performance';
+import { type IHierarchyNode } from '../types/performance';
+import { usePerformanceStore } from '../stores/performanceStore';
+import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
 
 interface SelectedComponentDetailProps {
   selectedComponentId: string | null;
-  allMetrics: IAllComponentMetrics;
   buildHierarchyTree: IHierarchyNode[];
   setAiSummary: React.Dispatch<React.SetStateAction<string | null>>;
   setLoadingSummary: (loading: boolean) => void;
@@ -13,9 +14,8 @@ interface SelectedComponentDetailProps {
 }
 
 const SelectedComponentDetails: React.FC<SelectedComponentDetailProps> =
-  ({
+  React.memo(({
     selectedComponentId,
-    allMetrics,
     buildHierarchyTree,
     setAiSummary,
     setLoadingSummary,
@@ -23,10 +23,13 @@ const SelectedComponentDetails: React.FC<SelectedComponentDetailProps> =
     relativeFilePath,
     hookDetails,
   }) => {
-    const selectedMetrics = useMemo(
-      () => (selectedComponentId ? allMetrics[selectedComponentId] : null),
-      [selectedComponentId, allMetrics]
-    );
+    usePerformanceMonitor({
+        id: 'SelectedComponentDetails', // A unique ID for this component
+       
+      });
+    const selectedMetrics = usePerformanceStore((state) =>
+    selectedComponentId ? state.allMetrics[selectedComponentId] : null
+  )
 
     // ✅ Find parentId from the hierarchy tree
     const parentIdFromTree = useMemo(() => {
@@ -157,7 +160,7 @@ const SelectedComponentDetails: React.FC<SelectedComponentDetailProps> =
         )}
       </div>
     );
-  }
+  })
 ;
 
-export default  React.memo(SelectedComponentDetails);
+export default  SelectedComponentDetails;

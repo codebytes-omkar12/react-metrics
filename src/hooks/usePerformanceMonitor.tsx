@@ -1,6 +1,7 @@
 import { useRef, useEffect } from "react";
 import { type IMetrics, type IPropChange } from "../types/performance";
-import { usePerformanceDispatch } from "../context/PerformanceContext";
+import { usePerformanceStore } from '../stores/performanceStore'; 
+
 
 interface PerformanceMonitorOptions {
   id: string;                     // 👈 Now required and manually provided
@@ -55,8 +56,8 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions) {
     displayName: label,
   });
 
-  const { addOrUpdateMetrics } = usePerformanceDispatch();
-// console.log("[MONITOR] usePerformanceMonitor called for:", id);
+ const addOrUpdateMetrics = usePerformanceStore((state) => state.addOrUpdateMetrics);
+
 
   useEffect(() => {
     const prevMetrics = metricsRef.current;

@@ -1,7 +1,6 @@
 // App.tsx
 import './App.css';
 import PerformanceDashboard from './components/PerformanceDashBoard';
-import { PerformanceProvider } from './context/PerformanceContext';
 import TestComponent from './components/TestComponent';
 import { usePerformanceMonitor } from './hooks/usePerformanceMonitor';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -29,11 +28,17 @@ function AppLayout() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
-      <Navbar />
-
-      <div className="flex flex-1">
-        {isSidebarOpen && <Sidebar />}
-
+      
+      {/* We will wrap the Navbar and Main content in a div that handles the layout shift */}
+      <Sidebar />
+      
+      <div 
+        className={`
+          relative transition-all duration-300 ease-in-out
+          ${isSidebarOpen ? "ml-64" : "ml-0"}
+        `}
+      >
+        <Navbar />
         <main className="flex-1 p-6 overflow-y-auto transition-all duration-300">
           <div className="w-full max-w-7xl mx-auto bg-white dark:bg-gray-900 dark:text-white rounded-xl shadow-2xl p-8">
             <h1 className="text-center text-4xl font-extrabold text-gray-800 dark:text-white mb-8 pb-4 border-b-4 border-gray-200 dark:border-gray-700">
@@ -66,7 +71,6 @@ function AppLayout() {
 export default function App() {
   return (
     <ErrorBoundary fallback={<div>Fatal Error</div>}>
-      <PerformanceProvider>
         <ThemeProvider>
           <SidebarProvider>
             <FilePathProvider>
@@ -76,7 +80,6 @@ export default function App() {
             </FilePathProvider>
           </SidebarProvider>
         </ThemeProvider>
-      </PerformanceProvider>
     </ErrorBoundary>
   );
 }

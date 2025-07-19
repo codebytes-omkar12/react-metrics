@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
 
 interface ChildComponentProps {
   someProp: string;

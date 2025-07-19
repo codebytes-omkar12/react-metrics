@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 
 import { type IAllComponentMetrics, type IMemoryMetrics } from '../types/performance';
+import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
 
 interface PerformanceChartProps {
   allMetrics: IAllComponentMetrics;
@@ -22,7 +23,7 @@ const PerformanceCharts: React.FC<PerformanceChartProps> = ({
   isMemoryMonitoringAvailable
 }) => {
   const [memoryHistory, setMemoryHistory] = useState<IMemoryMetrics[]>([]);
-
+usePerformanceMonitor({id:"PerformanceCharts"})
   useEffect(() => {
     if (currentMemoryMetrics) {
       setMemoryHistory(prev => {

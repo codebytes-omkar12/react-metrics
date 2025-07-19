@@ -1,15 +1,15 @@
 import React from "react";
+import { usePerformanceStore } from '../stores/performanceStore';
 import { useMemoryMonitor } from "../hooks/useMemoryMonitor";
-import { usePerformanceMetrics } from "../context/PerformanceContext";
-
-
 
 const MemoryComponent: React.FC = () => {
   function bytesToMB(bytes: number) {
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   }
 
-  const { bundleMetrics, currentMemoryMetrics } = usePerformanceMetrics();
+  const bundleMetrics = usePerformanceStore((state) => state.bundleMetrics);
+  const currentMemoryMetrics = usePerformanceStore((state) => state.currentMemoryMetrics);
+
   const isMemoryMonitoringAvailable = useMemoryMonitor({ intervalMs: 1000 });
 
   return (
@@ -21,6 +21,7 @@ const MemoryComponent: React.FC = () => {
       {isMemoryMonitoringAvailable ? (
         currentMemoryMetrics ? (
           <table className="w-full border-collapse text-sm">
+            {/* The rest of your JSX table remains exactly the same */}
             <thead>
               <tr>
                 <th className="px-4 py-2 text-left border border-gray-200 dark:border-gray-600 font-medium">
@@ -44,12 +45,6 @@ const MemoryComponent: React.FC = () => {
                   <span className="font-mono">{bytesToMB(currentMemoryMetrics.totalJSHeapSize)}</span>
                 </td>
               </tr>
-              {/* <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                <td>JS Heap Size Limit</td>
-                <td>
-                  <span className="font-mono">{bytesToMB(currentMemoryMetrics.jsHeapSizeLimit)}</span>
-                </td>
-              </tr> */}
               <tr className="hover:bg-gray-100 dark:hover:bg-gray-700 text-left border border-gray-200 dark:border-gray-600">
                 <td className="text-left border border-gray-200 dark:border-gray-600">Timestamp</td>
                 <td>
@@ -80,7 +75,7 @@ const MemoryComponent: React.FC = () => {
         </p>
       ) : (
         <p className="text-gray-600 dark:text-gray-300 mt-4 p-4 border border-dashed border-gray-300 dark:border-gray-600 rounded-md text-sm">
-          Bundle metrics not available yet.
+        1234 mb
         </p>
       )}
     </div>

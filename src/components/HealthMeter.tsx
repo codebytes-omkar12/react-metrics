@@ -3,6 +3,8 @@ import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { LoaderPinwheel } from 'lucide-react';
 import { useEffect } from 'react';
+import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
+import { useParentId } from "../context/ParentMonitorContext";
 
 
 
@@ -12,6 +14,14 @@ interface HealthMeterProps {
 }
 
 const HealthMeter: React.FC<HealthMeterProps> = React.memo(({ healthScore = 0, loading = false }) => {
+  
+  usePerformanceMonitor({
+    id: 'HealthMeter', // A unique ID for this component
+    displayName: 'Health Meter',
+  
+    // Pass the component's props so the hook can track when they change
+    props: { healthScore, loading },
+  });
   let color = 'red';
   let label = 'Bad';
 
