@@ -2,165 +2,87 @@ import React, { useMemo } from 'react';
 import { type IHierarchyNode } from '../types/performance';
 import { usePerformanceStore } from '../stores/performanceStore';
 import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
+import { useBuildHierarchyTree } from '../utils/useBuildHierarchyTree';
 
-interface SelectedComponentDetailProps {
-  selectedComponentId: string | null;
-  buildHierarchyTree: IHierarchyNode[];
-  setAiSummary: React.Dispatch<React.SetStateAction<string | null>>;
-  setLoadingSummary: (loading: boolean) => void;
-  loadingSummary?: boolean;
-  relativeFilePath: string | null;
-  hookDetails: any[];
-}
+const SelectedComponentDetails: React.FC = React.memo(() => {
+  // usePerformanceMonitor({
+  //   id: 'SelectedComponentDetails',
+  // });
 
-const SelectedComponentDetails: React.FC<SelectedComponentDetailProps> =
-  React.memo(({
-    selectedComponentId,
-    buildHierarchyTree,
-    setAiSummary,
-    setLoadingSummary,
-    loadingSummary,
-    relativeFilePath,
-    hookDetails,
-  }) => {
-    usePerformanceMonitor({
-        id: 'SelectedComponentDetails', // A unique ID for this component
-       
-      });
-    const selectedMetrics = usePerformanceStore((state) =>
-    selectedComponentId ? state.allMetrics[selectedComponentId] : null
-  )
+  // ✅ Optimized Selector: This now only re-renders when the selected component's
+  // specific metrics change, or when the selectedComponentId itself changes.
+  const selectedMetrics = usePerformanceStore((state) =>
+    state.selectedComponentId ? state.allMetrics[state.selectedComponentId] : null
+  );
 
-    // ✅ Find parentId from the hierarchy tree
-    const parentIdFromTree = useMemo(() => {
-      if (!selectedComponentId) return 'None';
+  // We still need allMetrics for the hierarchy tree, but this won't cause
+  // this component to re-render unnecessarily because `useBuildHierarchyTree`
+  // is memoized.
+  const allMetrics = usePerformanceStore((state) => state.allMetrics);
+  const buildHierarchyTree = useBuildHierarchyTree(allMetrics);
+  
+  const selectedComponentId = usePerformanceStore((state) => state.selectedComponentId);
 
-      const findParent = (nodes: IHierarchyNode[], childId: string): string | null => {
-        for (const node of nodes) {
-          if (node.children.some(child => child.id === childId)) return node.id;
-          const deeper = findParent(node.children, childId);
-          if (deeper) return deeper;
-        }
-        return null;
-      };
+  const parentIdFromTree = useMemo(() => {
+    if (!selectedComponentId) return 'None';
 
-      return findParent(buildHierarchyTree, selectedComponentId) ?? 'None';
-    }, [selectedComponentId, buildHierarchyTree]);
-
-    const handleGetAISummary = async (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setLoadingSummary(true);
-      setAiSummary(null);
-
-      if (!relativeFilePath) {
-        setAiSummary('Missing file path for AI summary.');
-        setLoadingSummary(false);
-        return;
+    const findParent = (nodes: IHierarchyNode[], childId: string): string | null => {
+      for (const node of nodes) {
+        if (node.children.some(child => child.id === childId)) return node.id;
+        const deeper = findParent(node.children, childId);
+        if (deeper) return deeper;
       }
-
-      document.getElementById('ai-summary-box')?.scrollIntoView({ behavior: 'smooth' });
-
-      try {
-        const res = await fetch('http://localhost:5001/ai/summary', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            metrics: selectedMetrics ?? {},
-            relativeFilePath,
-            hookDetails: hookDetails ?? [],
-          }),
-        });
-
-        if (!res.ok || !res.body) {
-          const errorText = await res.text();
-          console.error('AI summary fetch failed:', errorText);
-          setAiSummary('Failed to fetch AI summary.');
-          return;
-        }
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-
-          for (const char of chunk) {
-            await new Promise(r => setTimeout(r, 25));
-            setAiSummary(prev => (prev ?? '') + char);
-          }
-        }
-      } catch (err) {
-        console.error('AI summary fetch error:', err);
-        setAiSummary('Failed to fetch AI summary: ' + (err instanceof Error ? err.message : String(err)));
-      } finally {
-        setLoadingSummary(false);
-      }
+      return null;
     };
 
-    SelectedComponentDetails.displayName = 'SelectedComponentDetails';
+    return findParent(buildHierarchyTree, selectedComponentId) ?? 'None';
+  }, [selectedComponentId, buildHierarchyTree]);
 
-    return (
-      <div className="rounded-xl text-black shadow-md p-6 border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 dark:text-gray-100 flex-auto">
-        <h3 className="text-xl font-semibold mb-4 pb-2 border-b border-gray-200 dark:border-gray-600">
-          Component Details
-        </h3>
-        {selectedMetrics ? (
-          <div className="space-y-2 text-sm">
-            <p><strong className="font-medium w-32">ID:</strong> {selectedMetrics.id}</p>
-            <p><strong className="font-medium w-32">Display Name:</strong> {selectedMetrics.displayName}</p>
-            <p><strong className="font-medium w-32">Parent ID:</strong> {parentIdFromTree}</p>
-            <p><strong className="font-medium w-32">Mount Time:</strong> {selectedMetrics.mountTime.toFixed(2)} ms</p>
-            <p><strong className="font-medium w-32">Last Render Duration:</strong> {selectedMetrics.lastRenderDuration.toFixed(2)} ms</p>
-            <p><strong className="font-medium w-32">Re-Renders:</strong> {selectedMetrics.reRenders}</p>
+  SelectedComponentDetails.displayName = 'SelectedComponentDetails';
 
-            <h4 className="text-lg font-semibold mt-6 mb-3">Prop Changes:</h4>
-            {Object.keys(selectedMetrics.propsChanged).length > 0 ? (
-              <div className="list-disc pl-5 space-y-1 text-sm">
-                {Object.entries(selectedMetrics.propsChanged).map(([propName, change]) => (
-                  <p key={propName}>
-                    <strong>{propName}:</strong> From{' '}
-                    <span className="font-mono bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded text-xs">
-                      {String(change.from)}
-                    </span>{' '}
-                    to{' '}
-                    <span className="font-mono bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded text-xs">
-                      {String(change.to)}
-                    </span>
-                  </p>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-600 dark:text-gray-300">No prop changes detected in last render.</p>
-            )}
+  return (
+    <div className="rounded-xl  shadow-md p-6 border border-border-light dark:border-border-dark bg-card-light dark:bg-card-dark flex-auto ">
+      <h3 className="text-xl font-semibold mb-4 pb-2 border-b border-border-light dark:border-border-dark">
+        Component Details
+      </h3>
+      {selectedMetrics ? (
+        <div className="space-y-2 text-sm">
+          <p><strong className="font-medium w-32 text-text-primary-light dark:text-text-primary-dark">ID:</strong> <span className="text-text-secondary-light dark:text-text-secondary-dark">{selectedMetrics.id}</span></p>
+          <p><strong className="font-medium w-32 text-text-primary-light dark:text-text-primary-dark">Display Name:</strong> <span className="text-text-secondary-light dark:text-text-secondary-dark">{selectedMetrics.displayName}</span></p>
+          <p><strong className="font-medium w-32 text-text-primary-light dark:text-text-primary-dark">Parent ID:</strong> <span className="text-text-secondary-light dark:text-text-secondary-dark">{parentIdFromTree}</span></p>
+          <p><strong className="font-medium w-32 text-text-primary-light dark:text-text-primary-dark">Mount Time:</strong> <span className="text-text-secondary-light dark:text-text-secondary-dark">{selectedMetrics.mountTime.toFixed(2)} ms</span></p>
+          <p><strong className="font-medium w-32 text-text-primary-light dark:text-text-primary-dark">Last Render:</strong> <span className="text-text-secondary-light dark:text-text-secondary-dark">{selectedMetrics.lastRenderDuration.toFixed(2)} ms</span></p>
+          <p><strong className="font-medium w-32 text-text-primary-light dark:text-text-primary-dark">Re-Renders:</strong> <span className="text-text-secondary-light dark:text-text-secondary-dark">{selectedMetrics.reRenders}</span></p>
 
-            <button
-              className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
-              onClick={handleGetAISummary}
-            >
-              {loadingSummary
-                ? 'Loading...'
-                : 'Get AI Summary'}
-            </button>
-          </div>
-        ) : (
-          <div>
-            <p className="text-gray-600 dark:text-gray-300 p-4 border border-dashed border-gray-300 dark:border-gray-600 rounded-md text-sm">
-              Click on a component in the hierarchy to see its details.
-            </p>
-            <button
-              className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
-              onClick={handleGetAISummary}
-            >
-              {loadingSummary ? 'Loading...' : 'Get AI Summary'}
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  })
-;
+          <h4 className="text-lg font-semibold pt-4 mt-4 border-t border-border-light dark:border-border-dark">Prop Changes:</h4>
+          {Object.keys(selectedMetrics.propsChanged).length > 0 ? (
+            <div className="list-disc pl-5 space-y-1 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+              {Object.entries(selectedMetrics.propsChanged).map(([propName, change]) => (
+                <p key={propName}>
+                  <strong>{propName}:</strong> From{' '}
+                  <span className="font-mono bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-xs">
+                    {String(change.from)}
+                  </span>{' '}
+                  to{' '}
+                  <span className="font-mono bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-xs">
+                    {String(change.to)}
+                  </span>
+                </p>
+              ))}
+            </div>
+          ) : (
+            <p className="text-text-secondary-light dark:text-text-secondary-dark italic">No prop changes detected in last render.</p>
+          )}
+        </div>
+      ) : (
+        <div>
+          <p className="text-text-secondary-light dark:text-text-secondary-dark p-4 border border-dashed border-border-light dark:border-border-dark rounded-md text-sm">
+            Click on a component in the hierarchy to see its details.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+});
 
-export default  SelectedComponentDetails;
+export default SelectedComponentDetails;

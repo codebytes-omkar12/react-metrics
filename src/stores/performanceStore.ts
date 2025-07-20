@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { IAllComponentMetrics, IMetrics, IMemoryMetrics, IBundleMetrics } from '../types/performance';
+import { throttle } from 'lodash';
 
 interface PerformanceState {
   allMetrics: IAllComponentMetrics;
@@ -14,6 +15,26 @@ interface PerformanceState {
   updateBundleMetrics: (metrics: IBundleMetrics | null) => void;
 }
 
+// Throttled function for performance metrics (stable instance)
+const throttledSetMetrics = throttle((set, componentName, metrics) => {
+  set((state: PerformanceState) => ({
+    allMetrics: { ...state.allMetrics, [componentName]: metrics },
+  }));
+}, 300, { leading: true, trailing: true });
+
+// ✅ Throttled function for memory metrics (stable instance)
+const throttledUpdateMemoryMetrics = throttle((set, metrics) => {
+    if (metrics) {
+        set((state: PerformanceState) => ({
+          currentMemoryMetrics: metrics,
+          memoryHistory: [...state.memoryHistory, metrics].slice(-60),
+        }));
+      } else {
+        set({ currentMemoryMetrics: null });
+      }
+}, 1000, { leading: true, trailing: true }); // Throttle to once per second
+
+
 export const usePerformanceStore = create<PerformanceState>((set) => ({
   // Initial State
   allMetrics: {},
@@ -24,21 +45,15 @@ export const usePerformanceStore = create<PerformanceState>((set) => ({
 
   // Actions
   setSelectedComponentId: (id) => set({ selectedComponentId: id }),
-  addOrUpdateMetrics: (componentName, metrics) =>
-    set((state) => ({
-      allMetrics: { ...state.allMetrics, [componentName]: metrics },
-    })),
   
-  // ✅ 3. Enhance the updateMemoryMetrics action to manage history
+  // This action now correctly invokes the stable throttled function
+  addOrUpdateMetrics: (componentName, metrics) => {
+    throttledSetMetrics(set, componentName, metrics);
+  },
+    
+  // ✅ This action now also correctly invokes its stable throttled function
   updateMemoryMetrics: (metrics) => {
-    if (metrics) {
-      set((state) => ({
-        currentMemoryMetrics: metrics,
-        memoryHistory: [...state.memoryHistory, metrics].slice(-60), 
-      }));
-    } else {
-      set({ currentMemoryMetrics: null });
-    }
+    throttledUpdateMemoryMetrics(set, metrics);
   },
 
   updateBundleMetrics: (metrics) => set({ bundleMetrics: metrics }),

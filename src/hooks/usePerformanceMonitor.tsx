@@ -2,9 +2,8 @@ import { useRef, useEffect } from "react";
 import { type IMetrics, type IPropChange } from "../types/performance";
 import { usePerformanceStore } from '../stores/performanceStore'; 
 
-
 interface PerformanceMonitorOptions {
-  id: string;                     // 👈 Now required and manually provided
+  id: string;
   displayName?: string;
   parentId?: string;
   props?: Record<string, any>;
@@ -56,8 +55,8 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions) {
     displayName: label,
   });
 
- const addOrUpdateMetrics = usePerformanceStore((state) => state.addOrUpdateMetrics);
-
+  // This action is now correctly throttled within the Zustand store
+  const addOrUpdateMetrics = usePerformanceStore((state) => state.addOrUpdateMetrics);
 
   useEffect(() => {
     const prevMetrics = metricsRef.current;
@@ -110,15 +109,11 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions) {
       updatedMetrics.lastRenderDuration !== prevMetrics.lastRenderDuration ||
       updatedMetrics.reRenders !== prevMetrics.reRenders;
 
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     if (hasRealChange && hasChanges) {
-      timeoutId = setTimeout(() => {
-        addOrUpdateMetrics(id, updatedMetrics);
-      }, 300);
+      addOrUpdateMetrics(id, updatedMetrics);
     }
 
     return () => {
-      if (timeoutId) clearTimeout(timeoutId);
       renderCountRef.current--;
     };
   }, [props, id, label, parentId, addOrUpdateMetrics]);

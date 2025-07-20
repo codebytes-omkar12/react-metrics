@@ -4,26 +4,24 @@ import {
   XAxis, YAxis, Tooltip, Legend,
   ResponsiveContainer, CartesianGrid
 } from 'recharts';
-
-import { type IAllComponentMetrics, type IMemoryMetrics } from '../types/performance';
+import { type IMemoryMetrics } from '../types/performance';
 import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
-
-interface PerformanceChartProps {
-  allMetrics: IAllComponentMetrics;
-  currentMemoryMetrics: IMemoryMetrics | null;
-  isMemoryMonitoringAvailable: boolean;
-}
+import { usePerformanceStore } from '../stores/performanceStore';
+import { useMemoryMonitor } from '../hooks/useMemoryMonitor';
 
 const bytesToMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(2);
 const formatTimeStamp = (timeStamp: number) => `${(timeStamp / 1000).toFixed(2)}s`;
 
-const PerformanceCharts: React.FC<PerformanceChartProps> = ({
-  allMetrics,
-  currentMemoryMetrics,
-  isMemoryMonitoringAvailable
-}) => {
+const PerformanceCharts: React.FC = () => {
+  // --- Data fetched directly within the component ---
+  const allMetrics = usePerformanceStore((state) => state.allMetrics);
+  const currentMemoryMetrics = usePerformanceStore((state) => state.currentMemoryMetrics);
+  const isMemoryMonitoringAvailable = useMemoryMonitor({ intervalMs: 1000 });
+  // --- End of fetched data ---
+
   const [memoryHistory, setMemoryHistory] = useState<IMemoryMetrics[]>([]);
-usePerformanceMonitor({id:"PerformanceCharts"})
+  usePerformanceMonitor({ id: "PerformanceCharts" })
+
   useEffect(() => {
     if (currentMemoryMetrics) {
       setMemoryHistory(prev => {
@@ -123,7 +121,6 @@ usePerformanceMonitor({id:"PerformanceCharts"})
               <Legend />
               <Line type="monotone" dataKey="usedJSHeapSize" stroke="#ffc658" name="Used Heap" dot={false} />
               <Line type="monotone" dataKey="totalJSHeapSize" stroke="#ff7300" name="Total Heap" dot={false} />
-              {/* <Line type="monotone" dataKey="jsHeapSizeLimit" stroke="#8884d8" name="Heap Limit" dot={false} /> */}
             </LineChart>
           </ResponsiveContainer>
         ) : (

@@ -276,33 +276,27 @@ console.log('hookDetails:', hookDetails);
   const isComponent = Object.keys(metrics).length > 0;
 
   const prompt = `
-You are a React and frontend code reviewer AI.
+Analyze the provided React component source code and its performance metrics.
 
-Analyze the following file and return:
-- A clear 3-4 line health summary
-- 2-3 actionable suggestions for improvements
+**TASK:**
+Provide a very brief, UI-friendly summary of the component's health.
 
---- FILE INFO ---
-Extension: ${extension}
-Type: ${isComponent ? 'React Component' : 'Utility / Hook / Other'}
+**RULES:**
+1.  Start with a single, concise sentence (max 15 words) summarizing the overall health.
+2.  Follow with a maximum of TWO short, actionable bullet points for improvement.
+3.  The entire response should be plain text and under 50 words total.
+4.  Do not use markdown.
 
 --- SOURCE CODE ---
-\`\`\`${extension.replace('.', '')}
+\`\`\`${path.extname(relativeFilePath).replace('.', '')}
 ${sourceCode}
 \`\`\`
 
-${isComponent ? `--- METRICS ---\n${JSON.stringify(metrics, null, 2)}\n` : ''}
+--- METRICS ---
+${JSON.stringify(metrics, null, 2)}
 
 --- HOOK USAGE ---
 ${JSON.stringify(hookDetails, null, 2)}
-
-Your response must stream as plain text only. Follow this format:
-
-[summary]
-SUGGESTIONS:
-- [tip 1]
-- [tip 2]
-- [tip 3]
 `;
 
   try {

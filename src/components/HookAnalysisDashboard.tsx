@@ -1,19 +1,27 @@
-
 import { useState, useEffect } from 'react';
 import HookDetailsTable from './HookDetailsTable';
 import { useFilePath } from '../context/FilePathContext';
 import { type HookDetail } from '../types/performance';
 import { useHookAnalysis } from '../context/HookAnalysisContext';
-
-
+import withPerformanceMonitor from '../HOC/withPerformanceMonitor'; // ✅ Import the HOC
+import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
 
 function HookAnalysisDashboard() {
+  usePerformanceMonitor({
+    id: 'HookAnalysisDashboard',
+  });
+
   const { filePath } = useFilePath();
   const { setHookDetails, setHookReady } = useHookAnalysis();
   const [hookDetails, setLocalHookDetails] = useState<HookDetail[] | null>(null);
 
   useEffect(() => {
-    if (!filePath) return;
+    if (!filePath) {
+      setLocalHookDetails(null); // Clear details when no file is selected
+      return;
+    }
+
+    setLocalHookDetails(null); // Show loading state immediately
 
     const fetchHookDetails = async () => {
       try {
@@ -23,12 +31,14 @@ function HookAnalysisDashboard() {
           body: JSON.stringify({ relativeFilePath: filePath }),
         });
 
+        if (!res.ok) throw new Error('Failed to fetch hook details');
+
         const data = await res.json();
 
         if (Array.isArray(data)) {
           setLocalHookDetails(data);
-          setHookDetails(data);      // ✅ set context
-          setHookReady(true);        // ✅ mark ready
+          setHookDetails(data);
+          setHookReady(true);
         } else {
           console.error("Invalid hook data:", data);
           setLocalHookDetails([]);
@@ -44,58 +54,56 @@ function HookAnalysisDashboard() {
     };
 
     fetchHookDetails();
-  }, [filePath]);
+  }, [filePath, setHookDetails, setHookReady]);
 
   const hooksUsed = hookDetails
     ? Array.from(new Set(hookDetails.map((h) => h.hook)))
     : [];
 
+  // Don't render anything if no file is selected or no hooks are found
+  if (!hookDetails || hookDetails.length === 0) {
+    return null;
+  }
+
   return (
-    <div className="p-4 space-y-6 text-gray-800 dark:text-gray-100">
-      {hookDetails && hookDetails.length > 0 ? (
-        <>
-          <h2 className="text-2xl font-bold mb-3 border-b pb-1 dark:border-gray-600">
+    <div className="bg-card-light dark:bg-card-dark p-6 rounded-lg border border-border-light dark:border-border-dark shadow-sm animate-fade-in-up space-y-6">
+        <h2 className="text-2xl font-bold pb-2 border-b border-border-light dark:border-border-dark">
             🧩 Hook Analysis Report
-          </h2>
-
-          <ul className="space-y-3">
-            {hookDetails.map((hook, index) => (
-              <li key={index} className="bg-gray-100 dark:bg-gray-800 p-3 rounded-md shadow-sm">
-                <p>
-                  <span className="font-mono font-semibold text-blue-800 dark:text-blue-300">
-                    {hook.hook}
-                  </span>{" "}
-                  used on line <span className="font-mono">{hook.line}</span>
-                </p>
-                {hook.description && (
-                  <p className="text-sm italic text-gray-600 dark:text-gray-400 mt-1">
-                    “{hook.description}”
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-6">
-            <h3 className="font-semibold text-lg mb-1">🧠 Unique Hooks Used:</h3>
-            <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded font-mono text-sm text-gray-900 dark:text-gray-100">
-              {hooksUsed.join(', ')}
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 className="font-semibold text-lg mb-2">Unique Hooks Used:</h3>
+                <div className="bg-background-light dark:bg-background-dark p-3 rounded font-mono text-sm">
+                    {hooksUsed.join(', ')}
+                </div>
             </div>
-          </div>
+            <div>
+                <h3 className="font-semibold text-lg mb-2">Hook Summary:</h3>
+                <ul className="space-y-2 text-sm">
+                    {hookDetails.map((hook, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <span className="font-mono font-semibold text-primary-light dark:text-primary-dark bg-primary-light/10 dark:bg-primary-dark/10 px-2 py-1 rounded">
+                          {hook.hook}
+                        </span>
+                        <span className="text-text-secondary-light dark:text-text-secondary-dark">
+                          used on line {hook.line}
+                        </span>
+                      </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
 
-          <div className="mt-8">
-            <h3 className="text-xl font-semibold mb-3 border-b pb-1 dark:border-gray-600">
-              🗂️ Full Hook Details
+        <div>
+            <h3 className="text-xl font-semibold mb-3 pt-4 border-t border-border-light dark:border-border-dark">
+                🗂️ Full Hook Details
             </h3>
             <HookDetailsTable data={hookDetails} />
-          </div>
-        </>
-      ) : (
-        <p className="mt-6 text-center text-gray-500 dark:text-gray-400 text-lg font-medium">
-          No React Hooks found in this file.
-        </p>
-      )}
+        </div>
     </div>
   );
 }
-export default  HookAnalysisDashboard;
+
+// ✅ Export the component wrapped in the HOC with an explicit ID
+export default HookAnalysisDashboard;

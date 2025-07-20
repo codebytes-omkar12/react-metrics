@@ -1,6 +1,5 @@
 import { useRef, useEffect } from 'react';
 import type { IMemoryMetrics } from '../types/performance';
-// 1. We import the Zustand store now
 import { usePerformanceStore } from '../stores/performanceStore';
 
 export function useMemoryMonitor(options?: { intervalMs: number }) {
@@ -8,20 +7,20 @@ export function useMemoryMonitor(options?: { intervalMs: number }) {
   const intervalRef = useRef<number>(0);
   const isApiAvailableRef = useRef<boolean>(true);
 
-  // 2. We get the update action from our new store
+  // This action is now correctly throttled within the Zustand store.
   const updateMemoryMetrics = usePerformanceStore((state) => state.updateMemoryMetrics);
 
   useEffect(() => {
     if (!(performance && (performance as any).memory)) {
       isApiAvailableRef.current = false;
-      console.warn("MemoryMonitoring not possible for this component");
+      console.warn("MemoryMonitoring is not available in this browser");
       updateMemoryMetrics(null);
       return;
     }
     
     isApiAvailableRef.current = true;
        
-    function sampleMemory() {
+    const sampleMemory = () => {
       const { jsHeapSizeLimit, usedJSHeapSize, totalJSHeapSize } = (performance as any).memory;
       const currentTimeStamp = performance.now();
       const updatedMemoryMetrics: IMemoryMetrics = {
@@ -30,7 +29,7 @@ export function useMemoryMonitor(options?: { intervalMs: number }) {
         usedJSHeapSize,
         timestamp: currentTimeStamp
       };
-      // 3. This now calls the action on our Zustand store
+      // This call now invokes the throttled action in the store.
       updateMemoryMetrics(updatedMemoryMetrics);
     };
 
@@ -38,9 +37,7 @@ export function useMemoryMonitor(options?: { intervalMs: number }) {
       sampleMemory();
     }, 500);
     
-    intervalRef.current = window.setInterval(() => {
-      sampleMemory();
-    }, intervalMs);
+    intervalRef.current = window.setInterval(sampleMemory, intervalMs);
   
     return () => {
       clearTimeout(timeoutId);

@@ -1,16 +1,19 @@
 import React from "react";
 import { usePerformanceStore } from '../stores/performanceStore';
 import { useMemoryMonitor } from "../hooks/useMemoryMonitor";
+import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
 
 const MemoryComponent: React.FC = () => {
+  usePerformanceMonitor({id:"MemoryComponent"});
   function bytesToMB(bytes: number) {
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   }
 
+  // --- Data fetched directly within the component ---
   const bundleMetrics = usePerformanceStore((state) => state.bundleMetrics);
   const currentMemoryMetrics = usePerformanceStore((state) => state.currentMemoryMetrics);
-
   const isMemoryMonitoringAvailable = useMemoryMonitor({ intervalMs: 1000 });
+  // --- End of fetched data ---
 
   return (
     <div className="rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 flex-auto">
@@ -21,7 +24,6 @@ const MemoryComponent: React.FC = () => {
       {isMemoryMonitoringAvailable ? (
         currentMemoryMetrics ? (
           <table className="w-full border-collapse text-sm">
-            {/* The rest of your JSX table remains exactly the same */}
             <thead>
               <tr>
                 <th className="px-4 py-2 text-left border border-gray-200 dark:border-gray-600 font-medium">
@@ -75,7 +77,7 @@ const MemoryComponent: React.FC = () => {
         </p>
       ) : (
         <p className="text-gray-600 dark:text-gray-300 mt-4 p-4 border border-dashed border-gray-300 dark:border-gray-600 rounded-md text-sm">
-        1234 mb
+          Bundle metrics not available.
         </p>
       )}
     </div>

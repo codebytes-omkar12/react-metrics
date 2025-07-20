@@ -1,64 +1,62 @@
 // App.tsx
 import './App.css';
 import PerformanceDashboard from './components/PerformanceDashBoard';
-import TestComponent from './components/TestComponent';
-import { usePerformanceMonitor } from './hooks/usePerformanceMonitor';
 import ErrorBoundary from './components/ErrorBoundary';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 import { SidebarProvider, useSidebar } from './context/SideBarContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { FilePathProvider } from './context/FilePathContext';
-import { useFilePath } from './context/FilePathContext';
+import { FilePathProvider, useFilePath } from './context/FilePathContext';
 import HookAnalysisDashboard from './components/HookAnalysisDashboard';
 import { HookAnalysisProvider } from './context/HookAnalysisContext';
+import SelectedComponentDetails from './components/SelectedComponentDetails';
+import PerformanceCharts from './components/PerformanceCharts';
+import MemoryComponent from './components/MemoryComponent';
 
 function AppLayout() {
-  const{filePath}=useFilePath()
- 
+  const { filePath } = useFilePath();
   const { isSidebarOpen } = useSidebar();
 
-  // Monitor App performance
-  usePerformanceMonitor({
-    id:"App",
-    displayName: "Application Root",
-    props: { filePath},
-  });
-
+  // usePerformanceMonitor({
+  //   id: "App",
+  //   displayName: "Application Root",
+  //   props: { filePath },
+  // });
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
-      
-      {/* We will wrap the Navbar and Main content in a div that handles the layout shift */}
+    <div className="flex min-h-screen bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark">
       <Sidebar />
-      
-      <div 
-        className={`
-          relative transition-all duration-300 ease-in-out
-          ${isSidebarOpen ? "ml-64" : "ml-0"}
-        `}
+      <div
+        className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${isSidebarOpen ? "ml-64" : "ml-0"}`}
       >
         <Navbar />
-        <main className="flex-1 p-6 overflow-y-auto transition-all duration-300">
-          <div className="w-full max-w-7xl mx-auto bg-white dark:bg-gray-900 dark:text-white rounded-xl shadow-2xl p-8">
-            <h1 className="text-center text-4xl font-extrabold text-gray-800 dark:text-white mb-8 pb-4 border-b-4 border-gray-200 dark:border-gray-700">
-              Performance Monitoring Dashboard
-            </h1>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          <div className="w-full max-w-8xl mx-auto animate-fade-in-up">
+            <header className="mb-8">
+              <h1 className="text-3xl font-bold tracking-tight">
+                React Performance Metrics
+              </h1>
+              <p className="text-text-secondary-light dark:text-text-secondary-dark mt-1">
+                An overview of your application's health and performance.
+              </p>
+            </header>
+            
+            <div className="space-y-6">
+              <PerformanceDashboard />
+              
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1">
+                  <MemoryComponent />
+                </div>
+                <div className="lg:col-span-2">
+                  <SelectedComponentDetails />
+                </div>
+              </div>
+              
+              <PerformanceCharts />
 
-            {/* Hidden test component */}
-            <div
-              className="flex flex-wrap justify-center gap-6 mb-10 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-inner"
-              style={{ display: "none" }}
-            >
-              <TestComponent someProp="easy prop" />
+              {filePath && <HookAnalysisDashboard />}
             </div>
-
-            <hr className="my-10 border-t-2 border-gray-300 dark:border-gray-600 w-full" />
-
-            <PerformanceDashboard/>
-            {filePath && (
-        <HookAnalysisDashboard/>
-      )}
           </div>
         </main>
       </div>
@@ -66,20 +64,18 @@ function AppLayout() {
   );
 }
 
-
-
 export default function App() {
   return (
     <ErrorBoundary fallback={<div>Fatal Error</div>}>
-        <ThemeProvider>
-          <SidebarProvider>
-            <FilePathProvider>
-              <HookAnalysisProvider>
+      <ThemeProvider>
+        <SidebarProvider>
+          <FilePathProvider>
+            <HookAnalysisProvider>
               <AppLayout />
-              </HookAnalysisProvider>
-            </FilePathProvider>
-          </SidebarProvider>
-        </ThemeProvider>
+            </HookAnalysisProvider>
+          </FilePathProvider>
+        </SidebarProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

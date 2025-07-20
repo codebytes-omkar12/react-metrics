@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
+    "backend:dev": "nodemon --watch \"Backend/**/*.ts\" --exec ts-node --project tsconfig.backend.json Backend/backend.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -44,6 +45,7 @@
     "@types/express": "^5.0.3",
     "@types/express-validator": "^2.20.33",
     "@types/helmet": "^0.0.48",
+    "@types/lodash": "^4.17.0",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.0.4",
     "@types/react": "^19.1.2",

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Folder, FileText, ChevronDown, ChevronRight } from "lucide-react";
+import { Folder, FileText, ChevronDown, ChevronRight, BarChart3 } from "lucide-react";
 import { useSidebar } from "../context/SideBarContext";
 import { useFilePath } from "../context/FilePathContext";
 import { usePerformanceStore } from '../stores/performanceStore';
 import { getComponentIdFromPath } from "../utils/getComponentIdFromPath";
+import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
 
 interface TreeNode {
   name: string;
@@ -13,17 +14,13 @@ interface TreeNode {
 }
 
 function buildTree(paths: string[]): TreeNode[] {
-  // ... (This function is correct and needs no changes)
   const root: TreeNode[] = [];
-
   for (const filePath of paths) {
     const parts = filePath.split("/");
     let currentLevel = root;
-
     parts.forEach((part, index) => {
       const isFile = index === parts.length - 1;
       let node = currentLevel.find((n) => n.name === part);
-
       if (!node) {
         node = {
           name: part,
@@ -33,24 +30,24 @@ function buildTree(paths: string[]): TreeNode[] {
         };
         currentLevel.push(node);
       }
-
       if (!isFile && node.children) {
         currentLevel = node.children;
       }
     });
   }
-
   return root;
 }
 
-const Sidebar: React.FC = () => {
+const Sidebar: React.FC = (props) => {
+  usePerformanceMonitor({
+    id: 'Sidebar',
+    props,
+  });
+
   const { isSidebarOpen } = useSidebar();
   const [treeData, setTreeData] = useState<TreeNode[]>([]);
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
   
-  // ❌ We no longer need local state for the selected file
-  // const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
-
   const { setFilePath } = useFilePath(); 
   const setSelectedComponentId = usePerformanceStore((state) => state.setSelectedComponentId);
   const currentlySelectedId = usePerformanceStore((state) => state.selectedComponentId);
@@ -73,43 +70,36 @@ const Sidebar: React.FC = () => {
       const isOpen = openFolders.has(node.path);
       const isFolder = node.type === "folder";
       const componentId = isFolder ? null : getComponentIdFromPath(node.path);
-      
-      // ✅ This is now the single source of truth for highlighting
       const isSelected = componentId === currentlySelectedId && componentId !== null;
 
       return (
         <div key={node.path} className="pl-2">
           <div
-            className={`flex items-center space-x-2 py-1 px-1 cursor-pointer rounded transition-colors ${
-              // ✅ We use the 'isSelected' variable which is derived from our global store
+            className={`flex items-center space-x-2 py-1.5 px-2 cursor-pointer rounded-md transition-colors text-sm ${
               isSelected
-                ? "bg-blue-700 text-white"
-                : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                ? "bg-primary-light/10 text-primary-light dark:bg-primary-dark/10 dark:text-primary-dark font-semibold"
+                : "hover:bg-gray-200/50 dark:hover:bg-gray-700/50 text-text-secondary-light dark:text-text-secondary-dark"
             }`}
             onClick={() => {
               if (isFolder) {
                 toggleFolder(node.path);
               } else {
-                // ✅ We still set the file path for other contexts
                 setFilePath(node.path);
-                // ✅ We set the global ID for the performance store
                 setSelectedComponentId(componentId);
               }
             }}
           >
             {isFolder ? (
-              <>
-                {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                <Folder size={16} />
-              </>
+              isOpen ? <ChevronDown size={16} className="flex-shrink-0" /> : <ChevronRight size={16} className="flex-shrink-0" />
             ) : (
-              <FileText size={16} />
+              <div className="w-4" /> // Placeholder for alignment
             )}
-            {isSidebarOpen && <span className="truncate">{node.name}</span>}
+            {isFolder ? <Folder size={16} className="flex-shrink-0" /> : <FileText size={16} className="flex-shrink-0" />}
+            <span className="truncate">{node.name}</span>
           </div>
 
           {isFolder && isOpen && node.children && (
-            <div className="pl-4">{renderTree(node.children)}</div>
+            <div className="pl-4 border-l border-border-light dark:border-border-dark ml-4">{renderTree(node.children)}</div>
           )}
         </div>
       );
@@ -129,27 +119,19 @@ const Sidebar: React.FC = () => {
   return (
     <aside
       className={`
-        transform transition-transform duration-300 ease-in-out
-        w-64 
-        h-full fixed top-0 left-0 z-40
-        overflow-y-auto
-        shadow-lg
-        text-black
-        border-r border-gray-200 dark:border-gray-700
-        bg-white dark:bg-gray-800 dark:text-white
+        fixed top-0 left-0 z-40 h-full
+        w-64 transform transition-transform duration-300 ease-in-out
+        bg-card-light/80 dark:bg-card-dark/80 backdrop-blur-lg
+        border-r border-border-light dark:border-border-dark
         ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}
     >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
-        <span
-          className={`text-lg font-bold transition-opacity duration-300 ${isSidebarOpen ? "opacity-100" : "opacity-0"
-            }`}
-        >
-          Explorer
-        </span>
+      <div className="flex items-center gap-2 px-4 py-4 border-b border-border-light dark:border-border-dark">
+        <BarChart3 className="text-primary-light dark:text-primary-dark" />
+        <span className="text-lg font-bold">React Metrics</span>
       </div>
 
-      <div className="px-2 py-4">{renderTree(treeData)}</div>
+      <div className="px-2 py-4 space-y-1">{renderTree(treeData)}</div>
     </aside>
   );
 };
