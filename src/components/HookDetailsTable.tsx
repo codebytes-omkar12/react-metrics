@@ -25,8 +25,9 @@ import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
           </tr>
         </thead>
         <tbody className="text-center text-gray-700 dark:text-gray-200">
-          {data.map((hook, idx) => (
-            <tr key={idx} className="border-t border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+          {data.map((hook) => (
+            
+              <tr key={`${hook.hook}-${hook.line}`}className="border-t border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
               <td className="px-4 py-2 font-mono">{hook.hook}</td>
               <td className="px-4 py-2">{hook.line}</td>
               <td className="px-4 py-2">{hook.source || 'Unknown'}</td>

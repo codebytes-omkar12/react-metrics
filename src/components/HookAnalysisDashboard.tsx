@@ -3,13 +3,10 @@ import HookDetailsTable from './HookDetailsTable';
 import { useFilePath } from '../context/FilePathContext';
 import { type HookDetail } from '../types/performance';
 import { useHookAnalysis } from '../context/HookAnalysisContext';
-import withPerformanceMonitor from '../HOC/withPerformanceMonitor'; // ✅ Import the HOC
 import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
 
 function HookAnalysisDashboard() {
-  usePerformanceMonitor({
-    id: 'HookAnalysisDashboard',
-  });
+  usePerformanceMonitor({id:"HookAnalysisDashboard"});
 
   const { filePath } = useFilePath();
   const { setHookDetails, setHookReady } = useHookAnalysis();

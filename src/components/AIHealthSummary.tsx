@@ -3,9 +3,10 @@ import { usePerformanceStore } from '../stores/performanceStore';
 import { useFilePath } from '../context/FilePathContext';
 import { useHookAnalysis } from '../context/HookAnalysisContext';
 import { Sparkles } from 'lucide-react';
-import withPerformanceMonitor from '../HOC/withPerformanceMonitor';
+import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
 
 const AIHealthSummary: React.FC = React.memo(() => {
+  usePerformanceMonitor({id:"AIHealthSummary"});
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const latestRequestId = useRef<number>(0);
@@ -57,7 +58,7 @@ const AIHealthSummary: React.FC = React.memo(() => {
           for (const char of chunk) {
             setAiSummary((prev) => (prev ?? "") + char);
             // This small delay is what makes the typing visible.
-            await new Promise(r => setTimeout(r, 10));
+            await new Promise(r => setTimeout(r, 20));
           }
         }
       } catch (err) {

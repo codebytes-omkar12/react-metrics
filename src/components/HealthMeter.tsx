@@ -12,10 +12,7 @@ interface HealthMeterProps {
 const HealthMeter: React.FC<HealthMeterProps> = React.memo((props) => {
   const { healthScore = 0, loading = false } = props;
 
-  usePerformanceMonitor({
-    id: 'HealthMeter',
-    props,
-  });
+  usePerformanceMonitor({id:"HealthMeter",props:props});
 
   let color = 'red';
   let label = 'Bad';

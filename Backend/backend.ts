@@ -86,6 +86,7 @@ function analyzeHookUsageFromFile(fullPath: string) {
       firstArg,
       description: description || param || "",
     });
+    
   }
 
   function visit(node: ts.Node) {
