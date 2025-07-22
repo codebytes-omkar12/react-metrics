@@ -35,7 +35,7 @@ const throttledUpdateMemoryMetrics = throttle((set, metrics) => {
 }, 1000, { leading: true, trailing: true }); // Throttle to once per second
 
 
-export const usePerformanceStore = create<PerformanceState>((set) => ({
+export const usePerformanceStore = create<PerformanceState>((set,get) => ({
   // Initial State
   allMetrics: {},
   selectedComponentId: null,
@@ -57,4 +57,6 @@ export const usePerformanceStore = create<PerformanceState>((set) => ({
   },
 
   updateBundleMetrics: (metrics) => set({ bundleMetrics: metrics }),
+
+  
 }));

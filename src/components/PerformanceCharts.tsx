@@ -4,23 +4,23 @@ import {
   XAxis, YAxis, Tooltip, Legend,
   ResponsiveContainer, CartesianGrid
 } from 'recharts';
-import { type IMemoryMetrics } from '../types/performance';
+import { type IMetrics, type IMemoryMetrics } from '../types/performance';
 import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
 import { usePerformanceStore } from '../stores/performanceStore';
-import { useMemoryMonitor } from '../hooks/useMemoryMonitor';
+import { useMemoryMonitor } from "../hooks/useMemoryMonitor";
 
 const bytesToMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(2);
 const formatTimeStamp = (timeStamp: number) => `${(timeStamp / 1000).toFixed(2)}s`;
 
 const PerformanceCharts: React.FC = () => {
-  // --- Data fetched directly within the component ---
+  // --- Data fetched from the store ---
   const allMetrics = usePerformanceStore((state) => state.allMetrics);
   const currentMemoryMetrics = usePerformanceStore((state) => state.currentMemoryMetrics);
-  const isMemoryMonitoringAvailable = useMemoryMonitor({ intervalMs: 1000 });
-  // --- End of fetched data ---
 
+  // --- Component-specific state and hooks ---
   const [memoryHistory, setMemoryHistory] = useState<IMemoryMetrics[]>([]);
-  usePerformanceMonitor({ id: "PerformanceCharts" })
+  const isMemoryMonitoringAvailable = useMemoryMonitor({ intervalMs: 1000 });
+  usePerformanceMonitor({ id: "PerformanceCharts" });
 
   useEffect(() => {
     if (currentMemoryMetrics) {
@@ -31,11 +31,14 @@ const PerformanceCharts: React.FC = () => {
     }
   }, [currentMemoryMetrics]);
 
+  // ✅ THIS IS THE CORRECT AND OPTIMIZED SOLUTION
+  // useMemo will only re-calculate this data when the `allMetrics` object changes.
+  // Since `allMetrics` is updated via throttle, this calculation is already infrequent.
   const componentChartData = useMemo(() => {
     return Object.values(allMetrics)
-      .filter(metric => metric.displayName !== 'Application Root' && metric.reRenders > 0)
-      .sort((a, b) => b.reRenders - a.reRenders)
-      .map(metric => ({
+      .filter((metric: IMetrics) => metric.displayName !== 'Application Root' && metric.reRenders > 0)
+      .sort((a: IMetrics, b: IMetrics) => b.reRenders - a.reRenders)
+      .map((metric: IMetrics) => ({
         name: metric.id,
         reRenders: metric.reRenders,
         lastRenderDuration: parseFloat(metric.lastRenderDuration.toFixed(2)),
