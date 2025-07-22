@@ -13,6 +13,8 @@ import SelectedComponentDetails from './components/SelectedComponentDetails';
 import PerformanceCharts from './components/PerformanceCharts';
 import MemoryComponent from './components/MemoryComponent';
 import withPerformanceMonitor from './HOC/withPerformanceMonitor';
+import TestComponent from './components/TestComponent';
+import ChildComponent from './components/ChildComponent';
 
 // Wrap the main layout with the HOC to monitor it
 const MonitoredAppLayout = withPerformanceMonitor(AppLayout, { id: 'App' });
@@ -23,6 +25,12 @@ function AppLayout() {
 
   return (
     <div className="flex min-h-screen bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark">
+      {/* Hidden components for metrics collection */}
+      <div style={{ display: 'none' }}>
+        <TestComponent someProp="test" />
+        <ChildComponent someProp="child test" />
+      </div>
+
       <Sidebar />
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${isSidebarOpen ? "ml-64" : "ml-0"}`}

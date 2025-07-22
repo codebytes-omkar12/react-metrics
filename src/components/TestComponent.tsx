@@ -12,7 +12,7 @@ const TestComponent: React.FC<TestComponentProps> = ({ someProp }) => {
   useEffect(() => {
     const clickInterval = setInterval(() => {
       setClickCount((prev) => prev + 1);
-    }, 5000);
+    }, 20000);
     return () => clearInterval(clickInterval);
   }, []);
 
