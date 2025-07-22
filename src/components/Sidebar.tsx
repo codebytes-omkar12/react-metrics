@@ -119,19 +119,20 @@ const Sidebar: React.FC = (props) => {
   return (
     <aside
       className={`
-        fixed top-0 left-0 z-40 h-full
-        w-64 transform transition-transform duration-300 ease-in-out
-        bg-card-light/80 dark:bg-card-dark/80 backdrop-blur-lg
-        border-r border-border-light dark:border-border-dark
-        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
-      `}
+      fixed top-0 left-0 z-40 h-full
+      w-64 transform transition-transform duration-300 ease-in-out
+      bg-card-light/80 dark:bg-card-dark/80 backdrop-blur-lg
+      border-r border-border-light dark:border-border-dark
+      ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+      flex flex-col
+    `}
     >
       <div className="flex items-center gap-2 px-4 py-4 border-b border-border-light dark:border-border-dark">
         <BarChart3 className="text-primary-light dark:text-primary-dark" />
         <span className="text-lg font-bold">React Metrics</span>
       </div>
 
-      <div className="px-2 py-4 space-y-1">{renderTree(treeData)}</div>
+      <div className="px-2 py-4 space-y-1 overflow-y-auto">{renderTree(treeData)}</div>
     </aside>
   );
 };

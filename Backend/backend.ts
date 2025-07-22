@@ -8,7 +8,6 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 import ts from "typescript";
-import { DocNode, DocPlainText, DocComment } from "@microsoft/tsdoc";
 
 dotenv.config();
 const app = express();
@@ -35,7 +34,6 @@ function listAllCodeFiles(dir: string, basePath = ''): string[] {
     if (entry.isDirectory()) {
       results = results.concat(listAllCodeFiles(fullPath, relativePath));
     } else if (entry.isFile() && allowedExts.some(ext => entry.name.endsWith(ext))) {
-      // 🟡 Return only relative path
       results.push(relativePath.replace(/\\/g, '/')); // Normalize slashes for Windows
     }
   }
@@ -48,11 +46,46 @@ function analyzeHookUsageFromFile(fullPath: string) {
   const fileContent = fs.readFileSync(fullPath, "utf-8");
   const sourceFile = ts.createSourceFile(fullPath, fileContent, ts.ScriptTarget.Latest, true);
   const hooks: any[] = [];
+   const importMap = new Map<string, string>();
 
+  function visitImports(node: ts.Node) {
+    if (ts.isImportDeclaration(node)) {
+      const source = node.moduleSpecifier.getText(sourceFile).replace(/['"]/g, '');
+      if (node.importClause) {
+        // Handles: import useThing from '...'
+        if (node.importClause.name) {
+          importMap.set(node.importClause.name.text, source);
+        }
+        // Handles: import { useThing, useAnother } from '...'
+        if (node.importClause.namedBindings && ts.isNamedImports(node.importClause.namedBindings)) {
+          for (const specifier of node.importClause.namedBindings.elements) {
+            importMap.set(specifier.name.text, source);
+          }
+        }
+      }
+    }
+    ts.forEachChild(node, visitImports);
+  }
+
+  visitImports(sourceFile);
   function processHook(hookName: string, callExpr: ts.CallExpression, startPos: number) {
     const line = sourceFile.getLineAndCharacterOfPosition(startPos).line + 1;
-    const args = callExpr.arguments.map(arg => arg.getText());
-    const firstArg = args.length > 0 ? args[0] : "";
+    
+    // --- MODIFICATION START ---
+    let args: string[];
+    let firstArg: string;
+
+    // Check if the current hook is 'useEffect'
+    if (hookName === 'useEffect') {
+      // If it is, ignore its arguments completely.
+      args = [];
+      firstArg = "default"; // Use a placeholder for clarity in the UI.
+    } else {
+      // For any other hook, process the arguments normally.
+      args = callExpr.arguments.map(arg => arg.getText());
+      firstArg = args.length > 0 ? args[0] : "";
+    }
+    // --- MODIFICATION END ---
 
     let tsDocText = "";
     const commentRanges = ts.getLeadingCommentRanges(fileContent, callExpr.pos) || [];
@@ -81,12 +114,11 @@ function analyzeHookUsageFromFile(fullPath: string) {
     hooks.push({
       hook: hookName,
       line,
-      source: "react",
+      source: importMap.get(hookName) || "Local/Unknown",
       args: args.length,
       firstArg,
       description: description || param || "",
     });
-    
   }
 
   function visit(node: ts.Node) {
@@ -121,25 +153,24 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/list-files', (req, res) => {
-  const rootDir = path.join(__dirname, '..',"src"); // or use process.cwd() if inside project root
+  const rootDir = path.join(__dirname, '..', "src");
   const files = listAllCodeFiles(rootDir, '');
   res.json(files);
 });
-
 
 app.post('/analyze', (req: Request, res: Response) => {
   const { relativeFilePath } = req.body;
 
   if (!relativeFilePath) {
-   res.status(400).json({ error: 'Missing relativeFilePath' });
-    return 
+    res.status(400).json({ error: 'Missing relativeFilePath' });
+    return;
   }
 
   const fullPath = path.resolve('src', relativeFilePath);
 
   if (!fs.existsSync(fullPath)) {
     res.status(404).json({ error: 'File not found' });
-    return 
+    return;
   }
 
   try {
@@ -149,33 +180,34 @@ app.post('/analyze', (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to analyze file', details: String(err) });
   }
 });
+
 app.post('/ai/score', async (req: Request, res: Response) => {
   const { metrics, relativeFilePath, hookDetails } = req.body;
 
   if (!metrics || typeof metrics !== 'object') {
     res.status(400).json({ error: 'Missing or invalid metrics' });
-    return ;
+    return;
   }
   if (!relativeFilePath || typeof relativeFilePath !== 'string') {
-   res.status(400).json({ error: 'Missing or invalid relativeFilePath' });
-    return ;
+    res.status(400).json({ error: 'Missing or invalid relativeFilePath' });
+    return;
   }
   if (!hookDetails || !Array.isArray(hookDetails)) {
     res.status(400).json({ error: 'Missing or invalid hookDetails' });
-    return ;
+    return;
   }
 
   const fullPath = path.resolve('src', relativeFilePath);
   if (!fs.existsSync(fullPath)) {
     res.status(404).json({ error: 'File not found' });
-    return ;
+    return;
   }
 
   const sourceCode = fs.readFileSync(fullPath, 'utf-8');
   const extension = path.extname(relativeFilePath);
   const isComponent = Object.keys(metrics).length > 0;
 
- const prompt = `
+  const prompt = `
 You are a React code reviewer AI.
 
 Score the code from 0-100 based on:
@@ -202,7 +234,7 @@ ${isComponent ? `--- METRICS ---\n${JSON.stringify(metrics)}\n` : ''}
 --- HOOK USAGE ---
 ${JSON.stringify(hookDetails)}
 `.trim();
-;
+  ;
 
   try {
     const response = await ai.models.generateContent({
@@ -211,39 +243,34 @@ ${JSON.stringify(hookDetails)}
       config: { temperature: 0.2, maxOutputTokens: 4000 },
     });
 
- const text = response.text || '';
-console.log('🔍 Gemini raw response:', text);
+    const text = response.text || '';
+    console.log('🔍 Gemini raw response:', text);
 
-try {
-  // Strip markdown fences
-  const cleaned = text
-    .replace(/```json/i, '')
-    .replace(/```/, '')
-    .trim();
+    try {
+      const cleaned = text
+        .replace(/```json/i, '')
+        .replace(/```/, '')
+        .trim();
 
-  // Optional: validate that it looks like JSON
-  if (!cleaned.startsWith('{') || !cleaned.endsWith('}')) {
-    throw new Error('Invalid JSON format');
-  }
+      if (!cleaned.startsWith('{') || !cleaned.endsWith('}')) {
+        throw new Error('Invalid JSON format');
+      }
 
-  const parsed = JSON.parse(cleaned);
+      const parsed = JSON.parse(cleaned);
+      const score = typeof parsed.score === 'number' ? parsed.score : null;
+      if (score === null) {
+        throw new Error('Score missing or invalid');
+      }
 
-  const score = typeof parsed.score === 'number' ? parsed.score : null;
-  if (score === null) {
-    throw new Error('Score missing or invalid');
-  }
-
-  res.json({ score });
-} catch (err) {
-  console.error('Invalid AI response:', err, '\nRaw Text:', text);
-  res.status(500).json({
-    error: 'AI returned invalid or incomplete JSON',
-    raw: text,
-    details: err instanceof Error ? err.message : String(err),
-  });
-}
-
-
+      res.json({ score });
+    } catch (err) {
+      console.error('Invalid AI response:', err, '\nRaw Text:', text);
+      res.status(500).json({
+        error: 'AI returned invalid or incomplete JSON',
+        raw: text,
+        details: err instanceof Error ? err.message : String(err),
+      });
+    }
   } catch (error) {
     console.error('Gemini API error:', error);
     res.status(500).json({
@@ -256,20 +283,20 @@ try {
 app.post('/ai/summary', async (req: Request, res: Response) => {
   const { metrics, relativeFilePath, hookDetails } = req.body;
 
- console.log('📩 Incoming payload:');
-console.log('metrics:', metrics);
-console.log('relativeFilePath:', relativeFilePath);
-console.log('hookDetails:', hookDetails);
+  console.log('📩 Incoming payload:');
+  console.log('metrics:', metrics);
+  console.log('relativeFilePath:', relativeFilePath);
+  console.log('hookDetails:', hookDetails);
 
   if (!relativeFilePath) {
-   res.status(400).json({ error: 'Missing metrics, file path, or hook details' });
-    return 
+    res.status(400).json({ error: 'Missing metrics, file path, or hook details' });
+    return
   }
 
   const fullPath = path.resolve('src', relativeFilePath);
   if (!fs.existsSync(fullPath)) {
-     res.status(404).json({ error: 'File not found' });
-     return
+    res.status(404).json({ error: 'File not found' });
+    return
   }
 
   const sourceCode = fs.readFileSync(fullPath, 'utf-8');

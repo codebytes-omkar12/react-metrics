@@ -4,14 +4,23 @@ import { useSidebar } from '../context/SideBarContext';
 import { Menu, X, Sun, Moon } from 'lucide-react';
 import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
 
-const Navbar: React.FC = (props) => {
-  usePerformanceMonitor({
-    id: 'Navbar',
-    props,
-  });
+const Navbar: React.FC = () => {
+  /**
+ * Custom Hook To Extract Metrics
+ * @param initialValue - The starting count.
+ */
+  usePerformanceMonitor({id:'Navbar'});
 
-  const { isDarkMode, toggleTheme } = useTheme();
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
+  const { isDarkMode, toggleTheme } =
+  /**
+ * Context Hook to use theme toggling.
+ * @param initialValue - The starting count.
+ */useTheme();
+  const { isSidebarOpen, toggleSidebar } = 
+  /**
+ * Context Hook To share open/close status of sidebar.
+ * @param initialValue - The starting count.
+ */useSidebar();
 
   return (
     <header className="sticky top-0 z-30 w-full px-4 sm:px-6 py-3 bg-card-light/80 dark:bg-card-dark/80 backdrop-blur-lg border-b border-border-light dark:border-border-dark">

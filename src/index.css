@@ -59,7 +59,35 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+::-webkit-scrollbar {
+  width: 8px;
+}
 
+::-webkit-scrollbar-track {
+  background-color: theme('colors.background.light');
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: theme('colors.border.light');
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #a0a0a0; /* A slightly darker gray for hover */
+}
+
+/* Dark Mode Scrollbar Styles */
+.dark ::-webkit-scrollbar-track {
+  background-color: theme('colors.background.dark');
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: theme('colors.border.dark');
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #505050; /* A slightly lighter gray for dark mode hover */
+}
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

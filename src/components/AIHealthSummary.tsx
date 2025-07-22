@@ -6,11 +6,20 @@ import { Sparkles } from 'lucide-react';
 import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
 
 const AIHealthSummary: React.FC = React.memo(() => {
+ /**
+ * Hook To Extarct Metrics Of The Component.
+ * @param metricsprops - The starting count.
+ */
   usePerformanceMonitor({id:"AIHealthSummary"});
-  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  
+  const [aiSummary, setAiSummary] =  
+  /**
+ *State Hook To Set AI Summary String.
+ * @param initialValue - The starting count.
+ */useState<string | null>(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const latestRequestId = useRef<number>(0);
-
+  const summaryRef = useRef<HTMLParagraphElement | null>(null); 
   const selectedComponentId = usePerformanceStore((state) => state.selectedComponentId);
   const { filePath } = useFilePath();
   const { hookDetails, hookReady } = useHookAnalysis();
@@ -45,6 +54,7 @@ const AIHealthSummary: React.FC = React.memo(() => {
         const decoder = new TextDecoder();
         
         setLoadingSummary(false);
+        let finalSummaryText = "";
 
         while (true) {
           const { done, value } = await reader.read();
@@ -52,15 +62,22 @@ const AIHealthSummary: React.FC = React.memo(() => {
           if (latestRequestId.current !== currentRequestId) break;
 
           const chunk = decoder.decode(value, { stream: true });
+          finalSummaryText += chunk; 
+          
           
           // ✅ THE FIX: Re-introducing the character-by-character loop.
           // This creates the typewriter effect within this isolated component.
           for (const char of chunk) {
-            setAiSummary((prev) => (prev ?? "") + char);
+            if(summaryRef.current){
+               summaryRef.current.textContent+=char;
+            }
+           
             // This small delay is what makes the typing visible.
             await new Promise(r => setTimeout(r, 20));
           }
         }
+         setAiSummary(finalSummaryText);
+
       } catch (err) {
         if (latestRequestId.current === currentRequestId) {
           console.error("AI summary fetch error:", err);
@@ -89,7 +106,7 @@ const AIHealthSummary: React.FC = React.memo(() => {
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 animate-pulse"></div>
           </div>
         ) : (
-          <p className="text-text-secondary-light dark:text-text-secondary-dark text-xl" style={{ whiteSpace: "pre-wrap" }}>
+          <p ref={summaryRef} className="text-text-secondary-light dark:text-text-secondary-dark text-xl" style={{ whiteSpace: "pre-wrap" }}>
             {aiSummary ?? "Select a component file to analyze its health."}
           </p>
         )}
