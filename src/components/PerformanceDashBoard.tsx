@@ -5,6 +5,7 @@ import AIHealthSummary from "./AIHealthSummary" // Import the new component
 import { useFilePath } from '../context/FilePathContext';
 import { useHookAnalysis } from "../context/HookAnalysisContext";
 import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
+import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
 
 const PerformanceDashboard: React.FC = React.memo(() => {
     usePerformanceMonitor({id:"PerformanceDashBoard"});
@@ -63,5 +64,5 @@ const PerformanceDashboard: React.FC = React.memo(() => {
     );
 });
 
-PerformanceDashboard.displayName = "PerformanceDashboard";
-export default PerformanceDashboard;
+
+export default withPerformanceMonitor(PerformanceDashboard,{id:"PerformanceDashboard"});

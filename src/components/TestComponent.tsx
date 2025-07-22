@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ChildComponent from "./ChildComponent";
 import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
-import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
 
 interface TestComponentProps {
   someProp: string;
@@ -9,7 +8,6 @@ interface TestComponentProps {
 
 const TestComponent: React.FC<TestComponentProps> = ({ someProp }) => {
   const [clickCount, setClickCount] = useState(0);
-  usePerformanceMonitor({id:"TestComponent"});
 
   useEffect(() => {
     const clickInterval = setInterval(() => {
@@ -31,5 +29,4 @@ const TestComponent: React.FC<TestComponentProps> = ({ someProp }) => {
   );
 };
 
-// ✅ Apply the same explicit ID pattern here.
 export default withPerformanceMonitor(TestComponent, { id: 'TestComponent' });

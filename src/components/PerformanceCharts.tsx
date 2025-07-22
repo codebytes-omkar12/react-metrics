@@ -5,22 +5,18 @@ import {
   ResponsiveContainer, CartesianGrid
 } from 'recharts';
 import { type IMetrics, type IMemoryMetrics } from '../types/performance';
-import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
 import { usePerformanceStore } from '../stores/performanceStore';
 import { useMemoryMonitor } from "../hooks/useMemoryMonitor";
+import withPerformanceMonitor from '../HOC/withPerformanceMonitor';
 
 const bytesToMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(2);
 const formatTimeStamp = (timeStamp: number) => `${(timeStamp / 1000).toFixed(2)}s`;
 
 const PerformanceCharts: React.FC = () => {
-  // --- Data fetched from the store ---
   const allMetrics = usePerformanceStore((state) => state.allMetrics);
   const currentMemoryMetrics = usePerformanceStore((state) => state.currentMemoryMetrics);
-
-  // --- Component-specific state and hooks ---
   const [memoryHistory, setMemoryHistory] = useState<IMemoryMetrics[]>([]);
   const isMemoryMonitoringAvailable = useMemoryMonitor({ intervalMs: 1000 });
-  usePerformanceMonitor({ id: "PerformanceCharts" });
 
   useEffect(() => {
     if (currentMemoryMetrics) {
@@ -31,9 +27,6 @@ const PerformanceCharts: React.FC = () => {
     }
   }, [currentMemoryMetrics]);
 
-  // ✅ THIS IS THE CORRECT AND OPTIMIZED SOLUTION
-  // useMemo will only re-calculate this data when the `allMetrics` object changes.
-  // Since `allMetrics` is updated via throttle, this calculation is already infrequent.
   const componentChartData = useMemo(() => {
     return Object.values(allMetrics)
       .filter((metric: IMetrics) => metric.displayName !== 'Application Root' && metric.reRenders > 0)
@@ -48,7 +41,6 @@ const PerformanceCharts: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-      {/* Component Re-renders Chart */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700 flex-1 min-h-[300px]">
         <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-600">
           Component Re-renders (Top 10)
@@ -71,7 +63,6 @@ const PerformanceCharts: React.FC = () => {
         )}
       </div>
 
-      {/* Component Last Render Duration Chart */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700 flex-1 min-h-[300px]">
         <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-600">
           Component Last Render Duration (Top 10)
@@ -97,7 +88,6 @@ const PerformanceCharts: React.FC = () => {
         )}
       </div>
 
-      {/* Memory Usage Over Time Chart */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700 flex-1 min-h-[300px]">
         <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-600">
           Memory Usage Over Time
@@ -138,4 +128,4 @@ const PerformanceCharts: React.FC = () => {
   );
 };
 
-export default React.memo(PerformanceCharts);
+export default withPerformanceMonitor(PerformanceCharts, { id: 'PerformanceCharts' });

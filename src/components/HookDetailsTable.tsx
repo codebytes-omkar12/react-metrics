@@ -1,9 +1,7 @@
-import React from 'react';
 import { type HookDetail } from '../types/performance';
-import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
+import withPerformanceMonitor from '../HOC/withPerformanceMonitor';
 
  function HookDetailsTable({ data }: { data: HookDetail[] }) {
-  usePerformanceMonitor({id:"HookDetailsTable"});
   if (!data.length)
     return (
       <p className="text-gray-500 dark:text-gray-300 mt-4 p-4 border border-dashed border-gray-300 dark:border-gray-600 rounded-md text-sm text-center">
@@ -42,4 +40,4 @@ import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
   );
 }
 
-export default HookDetailsTable;
+export default withPerformanceMonitor(HookDetailsTable, { id: 'HookDetailsTable' });

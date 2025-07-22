@@ -1,23 +1,13 @@
 import React, { useMemo } from 'react';
 import { type IHierarchyNode } from '../types/performance';
 import { usePerformanceStore } from '../stores/performanceStore';
-import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
 import { useBuildHierarchyTree } from '../utils/useBuildHierarchyTree';
 
 const SelectedComponentDetails: React.FC = React.memo(() => {
-  // usePerformanceMonitor({
-  //   id: 'SelectedComponentDetails',
-  // });
-
-  // ✅ Optimized Selector: This now only re-renders when the selected component's
-  // specific metrics change, or when the selectedComponentId itself changes.
   const selectedMetrics = usePerformanceStore((state) =>
     state.selectedComponentId ? state.allMetrics[state.selectedComponentId] : null
   );
 
-  // We still need allMetrics for the hierarchy tree, but this won't cause
-  // this component to re-render unnecessarily because `useBuildHierarchyTree`
-  // is memoized.
   const allMetrics = usePerformanceStore((state) => state.allMetrics);
   const buildHierarchyTree = useBuildHierarchyTree(allMetrics);
   

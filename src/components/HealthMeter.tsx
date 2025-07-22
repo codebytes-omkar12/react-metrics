@@ -2,7 +2,7 @@ import React from "react";
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { LoaderPinwheel } from 'lucide-react';
-import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
+import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
 
 interface HealthMeterProps {
   healthScore?: number;
@@ -11,8 +11,6 @@ interface HealthMeterProps {
 
 const HealthMeter: React.FC<HealthMeterProps> = React.memo((props) => {
   const { healthScore = 0, loading = false } = props;
-
-  usePerformanceMonitor({id:"HealthMeter"});
 
   let color = 'red';
   let label = 'Bad';
@@ -55,4 +53,4 @@ const HealthMeter: React.FC<HealthMeterProps> = React.memo((props) => {
   );
 });
 
-export default HealthMeter;
+export default withPerformanceMonitor(HealthMeter, { id: 'HealthMeter' });

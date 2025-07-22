@@ -4,8 +4,9 @@ import { useSidebar } from "../context/SideBarContext";
 import { useFilePath } from "../context/FilePathContext";
 import { usePerformanceStore } from '../stores/performanceStore';
 import { getComponentIdFromPath } from "../utils/getComponentIdFromPath";
-import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
+import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
 
+// ... (TreeNode interface and buildTree function remain the same)
 interface TreeNode {
   name: string;
   path: string;
@@ -38,12 +39,8 @@ function buildTree(paths: string[]): TreeNode[] {
   return root;
 }
 
-const Sidebar: React.FC = (props) => {
-  usePerformanceMonitor({
-    id: 'Sidebar',
-    props,
-  });
 
+const Sidebar: React.FC = (props) => {
   const { isSidebarOpen } = useSidebar();
   const [treeData, setTreeData] = useState<TreeNode[]>([]);
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
@@ -137,4 +134,4 @@ const Sidebar: React.FC = (props) => {
   );
 };
 
-export default Sidebar;
+export default withPerformanceMonitor(Sidebar, { id: 'Sidebar' });

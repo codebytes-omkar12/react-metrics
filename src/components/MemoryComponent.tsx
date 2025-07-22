@@ -1,19 +1,16 @@
 import React from "react";
 import { usePerformanceStore } from '../stores/performanceStore';
 import { useMemoryMonitor } from "../hooks/useMemoryMonitor";
-import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
+import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
 
 const MemoryComponent: React.FC = () => {
-  usePerformanceMonitor({id:"MemoryComponent"});
   function bytesToMB(bytes: number) {
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   }
 
-  // --- Data fetched directly within the component ---
   const bundleMetrics = usePerformanceStore((state) => state.bundleMetrics);
   const currentMemoryMetrics = usePerformanceStore((state) => state.currentMemoryMetrics);
   const isMemoryMonitoringAvailable = useMemoryMonitor({ intervalMs: 1000 });
-  // --- End of fetched data ---
 
   return (
     <div className="rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 flex-auto">
@@ -84,4 +81,4 @@ const MemoryComponent: React.FC = () => {
   );
 };
 
-export default React.memo(MemoryComponent);
+export default withPerformanceMonitor(MemoryComponent, { id: 'MemoryComponent' });

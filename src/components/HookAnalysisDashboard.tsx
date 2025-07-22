@@ -3,22 +3,20 @@ import HookDetailsTable from './HookDetailsTable';
 import { useFilePath } from '../context/FilePathContext';
 import { type HookDetail } from '../types/performance';
 import { useHookAnalysis } from '../context/HookAnalysisContext';
-import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
+import withPerformanceMonitor from '../HOC/withPerformanceMonitor';
 
 function HookAnalysisDashboard() {
-  usePerformanceMonitor({id:"HookAnalysisDashboard"});
-
   const { filePath } = useFilePath();
   const { setHookDetails, setHookReady } = useHookAnalysis();
   const [hookDetails, setLocalHookDetails] = useState<HookDetail[] | null>(null);
 
   useEffect(() => {
     if (!filePath) {
-      setLocalHookDetails(null); // Clear details when no file is selected
+      setLocalHookDetails(null);
       return;
     }
 
-    setLocalHookDetails(null); // Show loading state immediately
+    setLocalHookDetails(null);
 
     const fetchHookDetails = async () => {
       try {
@@ -57,7 +55,6 @@ function HookAnalysisDashboard() {
     ? Array.from(new Set(hookDetails.map((h) => h.hook)))
     : [];
 
-  // Don't render anything if no file is selected or no hooks are found
   if (!hookDetails || hookDetails.length === 0) {
     return null;
   }
@@ -102,5 +99,4 @@ function HookAnalysisDashboard() {
   );
 }
 
-// ✅ Export the component wrapped in the HOC with an explicit ID
-export default HookAnalysisDashboard;
+export default withPerformanceMonitor(HookAnalysisDashboard, { id: 'HookAnalysisDashboard' });

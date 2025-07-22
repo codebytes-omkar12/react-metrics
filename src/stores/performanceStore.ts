@@ -15,27 +15,20 @@ interface PerformanceState {
   updateBundleMetrics: (metrics: IBundleMetrics | null) => void;
 }
 
-// Throttled function for performance metrics (stable instance)
-const throttledSetMetrics = throttle((set, componentName, metrics) => {
-  set((state: PerformanceState) => ({
-    allMetrics: { ...state.allMetrics, [componentName]: metrics },
-  }));
-}, 300, { leading: true, trailing: true });
-
-// ✅ Throttled function for memory metrics (stable instance)
+// Throttling for memory metrics is kept as it is time-series data polled at an interval.
 const throttledUpdateMemoryMetrics = throttle((set, metrics) => {
     if (metrics) {
         set((state: PerformanceState) => ({
           currentMemoryMetrics: metrics,
-          memoryHistory: [...state.memoryHistory, metrics].slice(-60),
+          memoryHistory: [...state.memoryHistory, metrics].slice(-60), // Keep last 60 entries
         }));
       } else {
         set({ currentMemoryMetrics: null });
       }
-}, 1000, { leading: true, trailing: true }); // Throttle to once per second
+}, 1000, { leading: true, trailing: true });
 
 
-export const usePerformanceStore = create<PerformanceState>((set,get) => ({
+export const usePerformanceStore = create<PerformanceState>((set) => ({
   // Initial State
   allMetrics: {},
   selectedComponentId: null,
@@ -46,17 +39,23 @@ export const usePerformanceStore = create<PerformanceState>((set,get) => ({
   // Actions
   setSelectedComponentId: (id) => set({ selectedComponentId: id }),
   
-  // This action now correctly invokes the stable throttled function
+  /**
+   * ✅ REMOVED THROTTLE for component metrics.
+   * This ensures that when a component mounts or re-renders, its data is available
+   * in the store immediately, fixing the delay bug where details would sometimes not appear on first click.
+   */
   addOrUpdateMetrics: (componentName, metrics) => {
-    throttledSetMetrics(set, componentName, metrics);
+    set((state) => ({
+      allMetrics: {
+        ...state.allMetrics,
+        [componentName]: metrics,
+      },
+    }));
   },
     
-  // ✅ This action now also correctly invokes its stable throttled function
   updateMemoryMetrics: (metrics) => {
     throttledUpdateMemoryMetrics(set, metrics);
   },
 
   updateBundleMetrics: (metrics) => set({ bundleMetrics: metrics }),
-
-  
 }));

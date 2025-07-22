@@ -3,23 +3,13 @@ import { usePerformanceStore } from '../stores/performanceStore';
 import { useFilePath } from '../context/FilePathContext';
 import { useHookAnalysis } from '../context/HookAnalysisContext';
 import { Sparkles } from 'lucide-react';
-import { usePerformanceMonitor } from '../hooks/usePerformanceMonitor';
+import withPerformanceMonitor from '../HOC/withPerformanceMonitor';
 
 const AIHealthSummary: React.FC = React.memo(() => {
- /**
- * Hook To Extarct Metrics Of The Component.
- * @param metricsprops - The starting count.
- */
-  usePerformanceMonitor({id:"AIHealthSummary"});
-  
-  const [aiSummary, setAiSummary] =  
-  /**
- *State Hook To Set AI Summary String.
- * @param initialValue - The starting count.
- */useState<string | null>(null);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const latestRequestId = useRef<number>(0);
-  const summaryRef = useRef<HTMLParagraphElement | null>(null); 
+  const summaryRef = useRef<HTMLParagraphElement | null>(null);
   const selectedComponentId = usePerformanceStore((state) => state.selectedComponentId);
   const { filePath } = useFilePath();
   const { hookDetails, hookReady } = useHookAnalysis();
@@ -39,7 +29,7 @@ const AIHealthSummary: React.FC = React.memo(() => {
 
       try {
         const selectedMetrics = usePerformanceStore.getState().allMetrics[selectedComponentId] ?? {};
-        
+
         const summaryResponse = await fetch("http://localhost:5001/ai/summary", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -52,7 +42,7 @@ const AIHealthSummary: React.FC = React.memo(() => {
 
         const reader = summaryResponse.body.getReader();
         const decoder = new TextDecoder();
-        
+
         setLoadingSummary(false);
         let finalSummaryText = "";
 
@@ -62,17 +52,13 @@ const AIHealthSummary: React.FC = React.memo(() => {
           if (latestRequestId.current !== currentRequestId) break;
 
           const chunk = decoder.decode(value, { stream: true });
-          finalSummaryText += chunk; 
-          
-          
-          // ✅ THE FIX: Re-introducing the character-by-character loop.
-          // This creates the typewriter effect within this isolated component.
+          finalSummaryText += chunk;
+
           for (const char of chunk) {
             if(summaryRef.current){
                summaryRef.current.textContent+=char;
             }
-           
-            // This small delay is what makes the typing visible.
+
             await new Promise(r => setTimeout(r, 20));
           }
         }
@@ -115,4 +101,4 @@ const AIHealthSummary: React.FC = React.memo(() => {
   );
 });
 
-export default AIHealthSummary;
+export default withPerformanceMonitor(AIHealthSummary, { id: 'AIHealthSummary' });

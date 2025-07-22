@@ -12,16 +12,14 @@ import { HookAnalysisProvider } from './context/HookAnalysisContext';
 import SelectedComponentDetails from './components/SelectedComponentDetails';
 import PerformanceCharts from './components/PerformanceCharts';
 import MemoryComponent from './components/MemoryComponent';
+import withPerformanceMonitor from './HOC/withPerformanceMonitor';
+
+// Wrap the main layout with the HOC to monitor it
+const MonitoredAppLayout = withPerformanceMonitor(AppLayout, { id: 'App' });
 
 function AppLayout() {
   const { filePath } = useFilePath();
   const { isSidebarOpen } = useSidebar();
-
-  // usePerformanceMonitor({
-  //   id: "App",
-  //   displayName: "Application Root",
-  //   props: { filePath },
-  // });
 
   return (
     <div className="flex min-h-screen bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark">
@@ -40,10 +38,10 @@ function AppLayout() {
                 An overview of your application's health and performance.
               </p>
             </header>
-            
+
             <div className="space-y-6">
               <PerformanceDashboard />
-              
+
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-1">
                   <MemoryComponent />
@@ -52,7 +50,7 @@ function AppLayout() {
                   <SelectedComponentDetails />
                 </div>
               </div>
-              
+
               <PerformanceCharts />
 
               {filePath && <HookAnalysisDashboard />}
@@ -71,7 +69,7 @@ export default function App() {
         <SidebarProvider>
           <FilePathProvider>
             <HookAnalysisProvider>
-              <AppLayout />
+              <MonitoredAppLayout />
             </HookAnalysisProvider>
           </FilePathProvider>
         </SidebarProvider>
