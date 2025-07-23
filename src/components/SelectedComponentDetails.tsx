@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { type IHierarchyNode } from '../types/performance';
 import { usePerformanceStore } from '../stores/performanceStore';
 import { useBuildHierarchyTree } from '../utils/useBuildHierarchyTree';
+import withPerformanceMonitor from '../HOC/withPerformanceMonitor';
 
 const SelectedComponentDetails: React.FC = React.memo(() => {
   const selectedMetrics = usePerformanceStore((state) =>
@@ -38,7 +39,7 @@ const SelectedComponentDetails: React.FC = React.memo(() => {
       {selectedMetrics ? (
         <div className="space-y-2 text-sm">
           <p><strong className="font-medium w-32 text-text-primary-light dark:text-text-primary-dark">ID:</strong> <span className="text-text-secondary-light dark:text-text-secondary-dark">{selectedMetrics.id}</span></p>
-          <p><strong className="font-medium w-32 text-text-primary-light dark:text-text-primary-dark">Display Name:</strong> <span className="text-text-secondary-light dark:text-text-secondary-dark">{selectedMetrics.displayName}</span></p>
+          {/* <p><strong className="font-medium w-32 text-text-primary-light dark:text-text-primary-dark">Display Name:</strong> <span className="text-text-secondary-light dark:text-text-secondary-dark">{selectedMetrics.displayName}</span></p> */}
           <p><strong className="font-medium w-32 text-text-primary-light dark:text-text-primary-dark">Parent ID:</strong> <span className="text-text-secondary-light dark:text-text-secondary-dark">{parentIdFromTree}</span></p>
           <p><strong className="font-medium w-32 text-text-primary-light dark:text-text-primary-dark">Mount Time:</strong> <span className="text-text-secondary-light dark:text-text-secondary-dark">{selectedMetrics.mountTime.toFixed(2)} ms</span></p>
           <p><strong className="font-medium w-32 text-text-primary-light dark:text-text-primary-dark">Last Render:</strong> <span className="text-text-secondary-light dark:text-text-secondary-dark">{selectedMetrics.lastRenderDuration.toFixed(2)} ms</span></p>
@@ -75,4 +76,4 @@ const SelectedComponentDetails: React.FC = React.memo(() => {
   );
 });
 
-export default SelectedComponentDetails;
+export default withPerformanceMonitor(SelectedComponentDetails,{id:"SelectedComponentDetails"});

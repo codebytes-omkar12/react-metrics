@@ -101,4 +101,4 @@ const AIHealthSummary: React.FC = React.memo(() => {
   );
 });
 
-export default withPerformanceMonitor(AIHealthSummary, { id: 'AIHealthSummary' });
+export default withPerformanceMonitor(AIHealthSummary,{id:"AIHealthSummary"});
