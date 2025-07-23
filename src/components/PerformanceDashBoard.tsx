@@ -24,6 +24,7 @@ const PerformanceDashboard: React.FC = React.memo(() => {
 
         const currentRequestId = Date.now();
         latestRequestId.current = currentRequestId;
+        setHealthScore(0);
 
         const fetchScore = async () => {
             setLoadingScore(true);
@@ -43,6 +44,7 @@ const PerformanceDashboard: React.FC = React.memo(() => {
             } catch (err) {
                 if (latestRequestId.current === currentRequestId) {
                     console.error("AI score fetch error:", err);
+                    setHealthScore(0);
                 }
             } finally {
                 if (latestRequestId.current === currentRequestId) {
