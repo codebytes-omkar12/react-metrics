@@ -3,6 +3,9 @@ import { usePerformanceMonitor } from "../hooks/usePerformanceMonitor";
 import { ParentMonitorProvider, useParentId } from "../context/ParentMonitorContext";
 
 const MonitorSpy: React.FC<{ monitorId: string; monitorDisplayName: string; props: object; parentId: string | null; }> = ({ monitorId, monitorDisplayName, props, parentId }) => {
+  /**
+   * The Hook Used Extracting Metrics Data
+   */
   usePerformanceMonitor({
     id: monitorId,
     displayName: monitorDisplayName,
@@ -24,8 +27,15 @@ function withPerformanceMonitor<P extends object>(
   const id = monitorArgs.id || displayName;
 
   const WrappedWithMonitor = React.forwardRef<unknown, P>((props, ref) => {
-    const parentId = useParentId();
-    const propsRef = useRef(props);
+    const parentId =     
+    /**
+   * The Context Hook To Track The Parent Component
+   */useParentId();
+
+    const propsRef =   
+    /**
+   * The Props Ref Variable
+   */useRef(props);
     propsRef.current = props;
 
     return (

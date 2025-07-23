@@ -6,10 +6,21 @@ import { useHookAnalysis } from '../context/HookAnalysisContext';
 import withPerformanceMonitor from '../HOC/withPerformanceMonitor';
 
 function HookAnalysisDashboard() {
-  const { filePath } = useFilePath();
-  const { setHookDetails, setHookReady } = useHookAnalysis();
-  const [hookDetails, setLocalHookDetails] = useState<HookDetail[] | null>(null);
-
+  const { filePath } =  
+  /**
+   * The Context Hook To Get FilePath
+   */useFilePath();
+  const { setHookDetails, setHookReady } = 
+  /**
+   * The Context Hook To Get get Hook Detils
+   */useHookAnalysis();
+  const [hookDetails, setLocalHookDetails] =  
+  /**
+   * The State Variable to set Hook Detils
+   */useState<HookDetail[] | null>(null);
+  /**
+   * The Use Effect Hook
+   */
   useEffect(() => {
     if (!filePath) {
       setLocalHookDetails(null);
