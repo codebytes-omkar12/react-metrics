@@ -6,15 +6,52 @@ import { Sparkles } from 'lucide-react';
 import withPerformanceMonitor from '../HOC/withPerformanceMonitor';
 
 const AIHealthSummary: React.FC = React.memo(() => {
-  const [aiSummary, setAiSummary] = useState<string | null>(null);
-  const [loadingSummary, setLoadingSummary] = useState(false);
-  const latestRequestId = useRef<number>(0);
-  const summaryRef = useRef<HTMLParagraphElement | null>(null);
-  const selectedComponentId = usePerformanceStore((state) => state.selectedComponentId);
-  const { filePath } = useFilePath();
-  const { hookDetails, hookReady } = useHookAnalysis();
+ 
+  const [aiSummary, setAiSummary] =  
+  /**
+   * State to hold the AI-generated summary text.
+   */
+  useState<string | null>(null);
+
+  const [loadingSummary, setLoadingSummary] =
+    /**
+   * State to manage the loading indicator while the summary is being fetched.
+   */ 
+  useState(false);
+  
+  const latestRequestId = 
+  /**
+   * Ref to store the timestamp of the latest request to prevent race conditions.
+   */
+  useRef<number>(0);
+ 
+  const summaryRef = 
+   /**
+   * Ref to the paragraph element to directly manipulate its content for the typewriter effect.
+   */
+  useRef<HTMLParagraphElement | null>(null);
+
+  
+  const selectedComponentId = 
+   /**
+   * Ref to the paragraph element to directly manipulate its content for the typewriter effect.
+   */
+  usePerformanceStore((state) => state.selectedComponentId);
+ 
+  const { filePath } = 
+   /**
+   * Gets the file path of the selected component from the context.
+   */
+  useFilePath();
+ 
+  const { hookDetails, hookReady } = 
+   /**
+   * Gets the hook analysis data and readiness state from the context.
+   */
+  useHookAnalysis();
 
   useEffect(() => {
+    // Do not fetch a summary if any of the required data is missing.
     if (!filePath || !hookReady || !selectedComponentId) {
       setAiSummary(null);
       return;
@@ -46,14 +83,17 @@ const AIHealthSummary: React.FC = React.memo(() => {
         setLoadingSummary(false);
         let finalSummaryText = "";
 
+        // Read the streamed response from the server.
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
+          // If a new request has been made, abort the current one.
           if (latestRequestId.current !== currentRequestId) break;
 
           const chunk = decoder.decode(value, { stream: true });
           finalSummaryText += chunk;
 
+          // Create the typewriter effect by appending characters one by one.
           for (const char of chunk) {
             if(summaryRef.current){
                summaryRef.current.textContent+=char;
@@ -64,10 +104,14 @@ const AIHealthSummary: React.FC = React.memo(() => {
         }
          setAiSummary(finalSummaryText);
 
-      } catch (err) {
+      }  catch (err) {
         if (latestRequestId.current === currentRequestId) {
           console.error("AI summary fetch error:", err);
-          setAiSummary("Failed to fetch AI summary.");
+          const errorMessage = "Could not retrieve AI summary. Please check the console for more details.";
+          if (summaryRef.current) {
+            summaryRef.current.textContent = errorMessage;
+          }
+          setAiSummary(errorMessage);
         }
       } finally {
         if (latestRequestId.current === currentRequestId) {

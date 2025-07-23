@@ -1,7 +1,7 @@
 import React from "react";
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-import { LoaderPinwheel } from 'lucide-react';
+import { HashLoader, RingLoader } from 'react-spinners';
 import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
 
 interface HealthMeterProps {
@@ -28,7 +28,7 @@ const HealthMeter: React.FC<HealthMeterProps> = React.memo((props) => {
       <div className="w-36 h-36 relative">
         {loading ? (
           <div className="flex items-center justify-center h-full w-full">
-            <LoaderPinwheel className="animate-spin-color h-40 w-40" />
+            <HashLoader size={100} color="#6042f5"/>
           </div>
         ) : (
           <CircularProgressbar

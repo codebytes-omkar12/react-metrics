@@ -11,7 +11,6 @@ import HookAnalysisDashboard from './components/HookAnalysisDashboard';
 import { HookAnalysisProvider } from './context/HookAnalysisContext';
 import SelectedComponentDetails from './components/SelectedComponentDetails';
 import PerformanceCharts from './components/PerformanceCharts';
-import MemoryComponent from './components/MemoryComponent';
 import withPerformanceMonitor from './HOC/withPerformanceMonitor';
 import TestComponent from './components/TestComponent';
 import ChildComponent from './components/ChildComponent';
@@ -48,20 +47,17 @@ function AppLayout() {
             </header>
 
             <div className="space-y-6">
-              <PerformanceDashboard />
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-1">
-                  <MemoryComponent />
-                </div>
-                <div className="lg:col-span-2">
-                  <SelectedComponentDetails />
-                </div>
+              {/* Row 1: Performance Dashboard and Selected Component Details */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <PerformanceDashboard />
+                <SelectedComponentDetails />
               </div>
 
-              <PerformanceCharts />
-
+              {/* Row 2: Hook Analysis (conditional) */}
               {filePath && <HookAnalysisDashboard />}
+
+              {/* Row 3: Performance Charts (now full-width) */}
+              <PerformanceCharts />
             </div>
           </div>
         </main>
