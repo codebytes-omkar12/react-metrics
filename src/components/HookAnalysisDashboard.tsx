@@ -82,9 +82,10 @@ function HookAnalysisDashboard() {
             </table>
           </div>
         </div>
-        <div>
+        <div >
           <h3 className="font-semibold text-lg mb-2">Hook Summary:</h3>
-          <ul className="space-y-2 text-sm">
+          < div className='bg-background-light dark:bg-background-dark p-3 rounded'>
+          <ul className="space-y-2 text-sm ">
             {hookDetails.map((hook, index) => (
               <li key={index} className="flex items-center gap-2">
                 <span className="font-mono font-semibold text-primary-light dark:text-primary-dark bg-primary-light/10 dark:bg-primary-dark/10 px-2 py-1 rounded">
@@ -96,6 +97,7 @@ function HookAnalysisDashboard() {
               </li>
             ))}
           </ul>
+          </div>
         </div>
       </div>
       <div className="mt-6">

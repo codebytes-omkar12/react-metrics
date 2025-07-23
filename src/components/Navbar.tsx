@@ -9,12 +9,14 @@ const Navbar: React.FC = () => {
   const { isSidebarOpen, toggleSidebar } = useSidebar();
 
   return (
-    <header className="sticky top-0 z-30 w-full px-4 sm:px-6 py-3 bg-card-light/80 dark:bg-card-dark/80 backdrop-blur-lg border-b border-border-light dark:border-border-dark">
+    <header 
+      className="sticky top-0 z-30 w-full px-4 py-3 bg-card-light/80 dark:bg-card-dark/80 backdrop-blur-lg border-b border-border-light dark:border-border-dark sm:px-6"
+    >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button
             onClick={toggleSidebar}
-            className="relative h-9 w-9 flex items-center justify-center rounded-md text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="relative flex h-9 w-9 items-center justify-center rounded-md text-text-secondary-light transition-colors hover:bg-gray-200 dark:text-text-secondary-dark dark:hover:bg-gray-700"
             aria-label="Toggle Sidebar"
           >
             <Menu
@@ -24,10 +26,19 @@ const Navbar: React.FC = () => {
               className={`absolute transition-all duration-300 ${isSidebarOpen ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 rotate-90 scale-50'}`}
             />
           </button>
+          {/* Page Title and Subtitle */}
+          <div>
+            <h1 className="text-lg font-bold tracking-tight">
+              React Performance Metrics
+            </h1>
+            <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark hidden sm:block">
+              An overview of your application's health and performance.
+            </p>
+          </div>
         </div>
         <button
           onClick={toggleTheme}
-          className="h-9 w-9 flex items-center justify-center rounded-md text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          className="flex h-9 w-9 items-center justify-center rounded-md text-text-secondary-light transition-colors hover:bg-gray-200 dark:text-text-secondary-dark dark:hover:bg-gray-700"
           title="Toggle Theme"
           aria-label="Toggle Theme"
         >

@@ -124,7 +124,7 @@ const Sidebar: React.FC = (props) => {
       flex flex-col
     `}
     >
-      <div className="flex items-center gap-2 px-4 py-4 border-b border-border-light dark:border-border-dark">
+      <div className="flex items-center gap-2 px-4 py-4 border-b border-border-light dark:border-border-dark ">
         <BarChart3 className="text-primary-light dark:text-primary-dark" />
         <span className="text-lg font-bold">React Metrics</span>
       </div>
