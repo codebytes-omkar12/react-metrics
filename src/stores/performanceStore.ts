@@ -8,11 +8,14 @@ interface PerformanceState {
   currentMemoryMetrics: IMemoryMetrics | null;
   bundleMetrics: IBundleMetrics | null;
   memoryHistory: IMemoryMetrics[];
+    isApiLimitExceeded: boolean;
+  
   // Actions
   setSelectedComponentId: (id: string | null) => void;
   addOrUpdateMetrics: (componentName: string, metrics: IMetrics) => void;
   updateMemoryMetrics: (metrics: IMemoryMetrics | null) => void;
   updateBundleMetrics: (metrics: IBundleMetrics | null) => void;
+  setApiLimitExceeded: (hasExceeded: boolean) => void;
 }
 
 // Throttling for memory metrics is kept as it is time-series data polled at an interval.
@@ -30,11 +33,13 @@ const throttledUpdateMemoryMetrics = throttle((set, metrics) => {
 
 export const usePerformanceStore = create<PerformanceState>((set) => ({
   // Initial State
+  
   allMetrics: {},
   selectedComponentId: null,
   bundleMetrics: null,
   currentMemoryMetrics: null,
   memoryHistory: [],
+  isApiLimitExceeded: false,
 
   // Actions
   setSelectedComponentId: (id) => set({ selectedComponentId: id }),
@@ -58,4 +63,5 @@ export const usePerformanceStore = create<PerformanceState>((set) => ({
   },
 
   updateBundleMetrics: (metrics) => set({ bundleMetrics: metrics }),
+  setApiLimitExceeded: (hasExceeded) => set({ isApiLimitExceeded: hasExceeded }),
 }));

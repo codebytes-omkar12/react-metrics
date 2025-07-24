@@ -4,6 +4,7 @@ import { useSidebar } from '../context/SideBarContext';
 import { Menu, X, Sun, Moon } from 'lucide-react';
 import withPerformanceMonitor from '../HOC/withPerformanceMonitor';
 import ApiKeyManager from './ApiKeyManager'; // Import the new component
+import ApiLimitWarning from './ApiLimitWarning';
 
 const Navbar: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -38,6 +39,7 @@ const Navbar: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-4 pr-9">
+          <ApiLimitWarning/>
           <ApiKeyManager />
           <button
             onClick={toggleTheme}

@@ -8,6 +8,7 @@ import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
 import { Sparkles } from "lucide-react";
 
 const PerformanceDashboard: React.FC = React.memo(() => {
+  const { setApiLimitExceeded } = usePerformanceStore.getState();
     const selectedComponentId = usePerformanceStore((state) => state.selectedComponentId);
     const { filePath } = useFilePath();
     const [healthScore, setHealthScore] = useState(0);
@@ -17,7 +18,7 @@ const PerformanceDashboard: React.FC = React.memo(() => {
     const [isKeyPresent, setIsKeyPresent] = useState(false);
 
     useEffect(() => {
-        const key = sessionStorage.getItem('gemini_api_key');
+        const key = localStorage.getItem('gemini_api_key');
         setIsKeyPresent(!!key);
 
         if (!filePath || !hookReady || !selectedComponentId || !key) {
@@ -30,36 +31,49 @@ const PerformanceDashboard: React.FC = React.memo(() => {
         setHealthScore(0);
 
         const fetchScore = async () => {
-            setLoadingScore(true);
-            try {
-                const selectedMetrics = usePerformanceStore.getState().allMetrics[selectedComponentId] ?? {};
-                const apiKey = sessionStorage.getItem('gemini_api_key');
+        setLoadingScore(true);
+        try {
+            const selectedMetrics = usePerformanceStore.getState().allMetrics[selectedComponentId] ?? {};
+            const apiKey = localStorage.getItem('gemini_api_key');
 
-                const scoreResponse = await fetch("http://localhost:5001/ai/score", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-API-Key": apiKey || '',
-                    },
-                    body: JSON.stringify({ metrics: selectedMetrics, relativeFilePath: filePath, hookDetails }),
-                });
-                const scoreData = await scoreResponse.json();
-
-                if (latestRequestId.current === currentRequestId && typeof scoreData?.score === "number") {
-                    setHealthScore(scoreData.score);
+            const scoreResponse = await fetch("http://localhost:5001/ai/score", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-API-Key": apiKey || '',
+                },
+                body: JSON.stringify({ metrics: selectedMetrics, relativeFilePath: filePath, hookDetails }),
+            });
+            
+            // Check for HTTP errors, especially 429 for rate limiting
+            if (!scoreResponse.ok) {
+                if (scoreResponse.status === 429) {
+                    console.error("API rate limit exceeded.");
+                    setApiLimitExceeded(true);
                 }
-            } catch (err) {
-                if (latestRequestId.current === currentRequestId) {
-                    console.error("AI score fetch error:", err);
-                    setHealthScore(0);
-                }
-            } finally {
-                if (latestRequestId.current === currentRequestId) {
-                    setLoadingScore(false);
-                }
+                // Throw an error to stop execution and go to the catch block
+                throw new Error(`HTTP error status: ${scoreResponse.status}`);
             }
-        };
 
+            // If the request was successful, ensure the error state is cleared
+            setApiLimitExceeded(false);
+
+            const scoreData = await scoreResponse.json();
+
+            if (latestRequestId.current === currentRequestId && typeof scoreData?.score === "number") {
+                setHealthScore(scoreData.score);
+            }
+        } catch (err) {
+            if (latestRequestId.current === currentRequestId) {
+                console.error("AI score fetch error:", err);
+                setHealthScore(0);
+            }
+        } finally {
+            if (latestRequestId.current === currentRequestId) {
+                setLoadingScore(false);
+            }
+        }
+    };
         fetchScore();
     }, [filePath, hookReady, selectedComponentId, hookDetails]);
 

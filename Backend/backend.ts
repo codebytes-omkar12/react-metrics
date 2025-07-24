@@ -291,9 +291,19 @@ ${JSON.stringify(hookDetails)}
     }
   } catch (error) {
     console.error('Gemini API error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    if (errorMessage.includes('429') || /rateLimitExceeded|quota/i.test(errorMessage)) {
+        res.status(429).json({
+            error: 'API rate limit exceeded.',
+            details: errorMessage,
+        });
+      return;
+    }
+
     res.status(500).json({
       error: 'Failed to get AI Score',
-      details: error instanceof Error ? error.message : String(error),
+      details: errorMessage,
     });
   }
 });
@@ -364,11 +374,18 @@ ${JSON.stringify(hookDetails, null, 2)}
     }
 
     res.end();
-  } catch (error) {
+  }  catch (error) {
     console.error('Gemini API error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    if (errorMessage.includes('429') || /rateLimitExceeded|quota/i.test(errorMessage)) {
+         res.status(429).send('API rate limit exceeded.');
+         return;
+    }
+    
     res.status(500).json({
       error: 'Failed to get AI summary',
-      details: error instanceof Error ? error.message : String(error),
+      details: errorMessage,
     });
   }
 });
