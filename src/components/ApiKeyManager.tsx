@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Check, Key, AlertCircle } from 'lucide-react';
+import  withPerformanceMonitor from '../HOC/withPerformanceMonitor';
 
 const ApiKeyManager: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -109,4 +110,4 @@ const ApiKeyManager: React.FC = () => {
   );
 };
 
-export default ApiKeyManager;
+export default withPerformanceMonitor(ApiKeyManager,{id:"ApiKeyManager"});
