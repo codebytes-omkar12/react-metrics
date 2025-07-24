@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Check, Key, AlertCircle } from 'lucide-react';
+import { Settings, Check, Key, AlertCircle} from 'lucide-react';
 import  withPerformanceMonitor from '../HOC/withPerformanceMonitor';
 
 const ApiKeyManager: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [feedbackState, setFeedbackState] = useState<'idle' | 'saved' | 'error'>('idle');
-  const [isKeyPresentInSession, setIsKeyPresentInSession] = useState(false);
+  const [isKeyPresentInLocal, setIsKeyPresentInLocal] = useState(false);
 
-  // On initial mount, check sessionStorage for an existing key
+  // On initial mount, check LocalStorage for an existing key
   useEffect(() => {
-    const keyFromSession = sessionStorage.getItem('gemini_api_key');
-    if (keyFromSession) {
-      setIsKeyPresentInSession(true);
-      setApiKey(keyFromSession);
+    const keyFromLocal = localStorage.getItem('gemini_api_key');
+    if (keyFromLocal) {
+      setIsKeyPresentInLocal(true);
+      setApiKey(keyFromLocal);
     }
   }, []);
 
@@ -41,8 +41,8 @@ const ApiKeyManager: React.FC = () => {
     }
 
     // Save the new key and update the UI state
-    sessionStorage.setItem('gemini_api_key', trimmedKey);
-    setIsKeyPresentInSession(true);
+    localStorage.setItem('gemini_api_key', trimmedKey);
+    setIsKeyPresentInLocal(true);
     setFeedbackState('saved');
 
     // After showing the "saved" feedback, close the input
@@ -103,7 +103,7 @@ const ApiKeyManager: React.FC = () => {
           Submit
         </button>
       </div>
-      {!isKeyPresentInSession && !isOpen && (
+      {!isKeyPresentInLocal && !isOpen && (
         <span className="ml-2 text-xs text-red-500 whitespace-nowrap">No API Key Inserted</span>
       )}
     </div>
