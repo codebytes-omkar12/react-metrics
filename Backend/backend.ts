@@ -13,13 +13,29 @@ dotenv.config();
 const app = express();
 const PORT = 5001;
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+// const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
 app.use(cors());
 app.use(express.json());
 app.use(helmet());
 app.use(compression());
 app.use(morgan('dev'));
+
+function getAiClient(req: Request) {
+  const apiKeyFromHeader = req.header('X-API-Key');
+  const apiKey = apiKeyFromHeader || process.env.GEMINI_API_KEY;
+
+  if (apiKeyFromHeader) {
+    console.log("✅ Using API key provided from the UI.");
+  } else if (process.env.GEMINI_API_KEY) {
+    console.log("— Using fallback API key from .env file.");
+  }
+
+  if (!apiKey) {
+    throw new Error('Gemini API key not found.');
+  }
+  return new GoogleGenAI({ apiKey });
+}
 
 /** Extract all allowed source files under `src/` recursively */
 function listAllCodeFiles(dir: string, basePath = ''): string[] {
@@ -182,7 +198,9 @@ app.post('/analyze', (req: Request, res: Response) => {
 });
 
 app.post('/ai/score', async (req: Request, res: Response) => {
-  const { metrics, relativeFilePath, hookDetails } = req.body;
+   try {
+    const ai = getAiClient(req); // Get AI client with the key from the request
+    const { metrics, relativeFilePath, hookDetails } = req.body;
 
   if (!metrics || typeof metrics !== 'object') {
     res.status(400).json({ error: 'Missing or invalid metrics' });
@@ -236,7 +254,7 @@ ${JSON.stringify(hookDetails)}
 `.trim();
   ;
 
-  try {
+ 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -281,7 +299,9 @@ ${JSON.stringify(hookDetails)}
 });
 
 app.post('/ai/summary', async (req: Request, res: Response) => {
-  const { metrics, relativeFilePath, hookDetails } = req.body;
+   try {
+    const ai = getAiClient(req);
+    const { metrics, relativeFilePath, hookDetails } = req.body;
 
   console.log('📩 Incoming payload:');
   console.log('metrics:', metrics);
@@ -327,7 +347,7 @@ ${JSON.stringify(metrics, null, 2)}
 ${JSON.stringify(hookDetails, null, 2)}
 `;
 
-  try {
+ 
     const response = await ai.models.generateContentStream({
       model: 'gemini-2.5-flash',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -355,6 +375,8 @@ ${JSON.stringify(hookDetails, null, 2)}
 
 app.post('/ai/test', async (req, res) => {
   try {
+
+    const ai = getAiClient(req);
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [{ role: "user", parts: [{ text: "Say hello world." }] }],

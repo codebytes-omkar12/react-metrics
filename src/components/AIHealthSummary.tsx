@@ -6,53 +6,20 @@ import { Sparkles } from 'lucide-react';
 import withPerformanceMonitor from '../HOC/withPerformanceMonitor';
 
 const AIHealthSummary: React.FC = React.memo(() => {
- 
-  const [aiSummary, setAiSummary] =  
-  /**
-   * State to hold the AI-generated summary text.
-   */
-  useState<string | null>(null);
-
-  const [loadingSummary, setLoadingSummary] =
-    /**
-   * State to manage the loading indicator while the summary is being fetched.
-   */ 
-  useState(false);
-  
-  const latestRequestId = 
-  /**
-   * Ref to store the timestamp of the latest request to prevent race conditions.
-   */
-  useRef<number>(0);
- 
-  const summaryRef = 
-   /**
-   * Ref to the paragraph element to directly manipulate its content for the typewriter effect.
-   */
-  useRef<HTMLParagraphElement | null>(null);
-
-  
-  const selectedComponentId = 
-   /**
-   * Ref to the paragraph element to directly manipulate its content for the typewriter effect.
-   */
-  usePerformanceStore((state) => state.selectedComponentId);
- 
-  const { filePath } = 
-   /**
-   * Gets the file path of the selected component from the context.
-   */
-  useFilePath();
- 
-  const { hookDetails, hookReady } = 
-   /**
-   * Gets the hook analysis data and readiness state from the context.
-   */
-  useHookAnalysis();
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [loadingSummary, setLoadingSummary] = useState(false);
+  const latestRequestId = useRef<number>(0);
+  const summaryRef = useRef<HTMLParagraphElement | null>(null);
+  const selectedComponentId = usePerformanceStore((state) => state.selectedComponentId);
+  const { filePath } = useFilePath();
+  const { hookDetails, hookReady } = useHookAnalysis();
+  const [isKeyPresent, setIsKeyPresent] = useState(false);
 
   useEffect(() => {
-    // Do not fetch a summary if any of the required data is missing.
-    if (!filePath || !hookReady || !selectedComponentId) {
+    const key = sessionStorage.getItem('gemini_api_key');
+    setIsKeyPresent(!!key);
+
+    if (!filePath || !hookReady || !selectedComponentId || !key) {
       setAiSummary(null);
       return;
     }
@@ -62,14 +29,18 @@ const AIHealthSummary: React.FC = React.memo(() => {
 
     const fetchSummary = async () => {
       setLoadingSummary(true);
-      setAiSummary(""); // Reset for typewriter effect
+      setAiSummary("");
 
       try {
         const selectedMetrics = usePerformanceStore.getState().allMetrics[selectedComponentId] ?? {};
+        const apiKey = sessionStorage.getItem('gemini_api_key');
 
         const summaryResponse = await fetch("http://localhost:5001/ai/summary", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Key": apiKey || '',
+          },
           body: JSON.stringify({ metrics: selectedMetrics, relativeFilePath: filePath, hookDetails }),
         });
 
@@ -83,28 +54,23 @@ const AIHealthSummary: React.FC = React.memo(() => {
         setLoadingSummary(false);
         let finalSummaryText = "";
 
-        // Read the streamed response from the server.
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          // If a new request has been made, abort the current one.
           if (latestRequestId.current !== currentRequestId) break;
 
           const chunk = decoder.decode(value, { stream: true });
           finalSummaryText += chunk;
 
-          // Create the typewriter effect by appending characters one by one.
           for (const char of chunk) {
             if(summaryRef.current){
                summaryRef.current.textContent+=char;
             }
-
             await new Promise(r => setTimeout(r, 20));
           }
         }
          setAiSummary(finalSummaryText);
-
-      }  catch (err) {
+      } catch (err) {
         if (latestRequestId.current === currentRequestId) {
           console.error("AI summary fetch error:", err);
           const errorMessage = "Could not retrieve AI summary. Please check the console for more details.";
@@ -124,13 +90,15 @@ const AIHealthSummary: React.FC = React.memo(() => {
   }, [filePath, hookReady, selectedComponentId, hookDetails]);
 
   return (
-    <div className="flex-1 flex flex-col justify-center w-full">
+    <div className="flex-1 flex flex-col justify-center w-auto">
       <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
         <Sparkles className="text-primary-light dark:text-primary-dark" size={20} />
         AI Health Summary
       </h3>
       <div className="min-h-[60px]">
-        {loadingSummary ? (
+        {!isKeyPresent ? (
+          <p className="text-red-500">Please enter a Gemini API Key to use this feature.</p>
+        ) : loadingSummary ? (
           <div className="space-y-2">
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 animate-pulse"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 animate-pulse"></div>
