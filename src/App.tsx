@@ -15,10 +15,36 @@ import withPerformanceMonitor from './HOC/withPerformanceMonitor';
 import TestComponent from './components/TestComponent';
 import ChildComponent from './components/ChildComponent';
 
+// --- NEW COMPONENT ---
+// This component will now be responsible for the part of the UI that
+// actually depends on the filePath.
+const MainContent = () => {
+  const { filePath } = useFilePath(); // The hook is moved here!
+
+  return (
+    <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+      <div className="mx-auto w-full max-w-8xl animate-fade-in-up">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <PerformanceDashboard />
+            <SelectedComponentDetails />
+          </div>
+          {/* This logic now lives inside the component that re-renders */}
+          {filePath && <HookAnalysisDashboard />}
+          <PerformanceCharts />
+        </div>
+      </div>
+    </main>
+  );
+};
+
+
 const MonitoredAppLayout = withPerformanceMonitor(AppLayout, { id: 'App' });
 
+// --- UPDATED AppLayout ---
+// AppLayout is now "dumber". It no longer knows about filePath and won't
+// re-render unnecessarily.
 function AppLayout() {
-  const { filePath } = useFilePath();
   const { isSidebarOpen } = useSidebar();
 
   return (
@@ -30,25 +56,14 @@ function AppLayout() {
 
       <Sidebar />
       
-      {/* This content wrapper slides and resizes for a smooth, responsive animation */}
       <div
         className={`absolute top-0 left-0 flex h-full flex-col transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-64 w-[calc(100%-16rem)]' : 'w-full translate-x-0'
         }`}
       >
         <Navbar />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto w-full max-w-8xl animate-fade-in-up">
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <PerformanceDashboard />
-                <SelectedComponentDetails />
-              </div>
-              {filePath && <HookAnalysisDashboard />}
-              <PerformanceCharts />
-            </div>
-          </div>
-        </main>
+        {/* Render the new MainContent component here */}
+        <MainContent />
       </div>
     </div>
   );

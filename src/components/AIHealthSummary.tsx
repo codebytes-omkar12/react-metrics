@@ -90,11 +90,10 @@ const AIHealthSummary: React.FC = React.memo(() => {
   }, [filePath, hookReady, selectedComponentId, hookDetails]);
 
   return (
+    
+    
     <div className="flex-1 flex flex-col justify-center w-auto">
-      <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-        <Sparkles className="text-primary-light dark:text-primary-dark" size={20} />
-        AI Health Summary
-      </h3>
+      
       <div className="min-h-[60px]">
         {!isKeyPresent ? (
           <p className="text-red-500">Please enter a Gemini API Key to use this feature.</p>
@@ -104,7 +103,7 @@ const AIHealthSummary: React.FC = React.memo(() => {
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 animate-pulse"></div>
           </div>
         ) : (
-          <p ref={summaryRef} className="text-text-secondary-light dark:text-text-secondary-dark text-xl" style={{ whiteSpace: "pre-wrap" }}>
+          <p ref={summaryRef} className="text-text-secondary-light dark:text-text-secondary-dark text-lg" style={{ whiteSpace: "pre-wrap" }}>
             {aiSummary ?? "Select a component file to analyze its health."}
           </p>
         )}
