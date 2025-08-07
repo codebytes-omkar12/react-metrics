@@ -8,11 +8,8 @@
     {
       "src": "package.json",
       "use": "@vercel/static-build",
-      "configuration": {
-        "installCommand": "npm install",
-        "buildCommand": "npm run build",
-        "outputDirectory": "dist"
-      }
+      "command": "npm run build",
+      "outputDirectory": "dist"
     }
   ],
   "rewrites": [
