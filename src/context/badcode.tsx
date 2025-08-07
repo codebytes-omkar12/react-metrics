@@ -16,16 +16,7 @@ const ExampleComponent: React.FC = () => {
   useState(0);
 
  
-  const [message, setMessage] = 
-   /** 
-   * This state is declared but never used, which may indicate redundant or
-   * leftover logic in real-world applications.
-   */
-  useState("Hello, world!");
- /** 
-   * This state is declared but never used, which may indicate redundant or
-   * leftover logic in real-world applications.
-   */
+  
   useEffect(() => {
     // ❌ This will cause an infinite loop because setCount triggers a re-render
     // and 'count' is in the dependency array

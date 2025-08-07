@@ -1,7 +1,7 @@
 // Main entry point for the react-metrics npm package
 
 // Components
-export { default as PerformanceDashBoard } from './components/PerformanceDashboard';
+export { default as PerformanceDashBoard } from './components/PerformanceDashBoard';
 export { default as HookAnalysisDashboard } from './components/HookAnalysisDashboard';
 export { default as TestComponent } from './components/TestComponent';
 export { default as SelectedDetailComponent } from './components/SelectedComponentDetails';

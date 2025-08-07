@@ -40,7 +40,7 @@ function buildTree(paths: string[]): TreeNode[] {
 }
 
 
-const Sidebar: React.FC = (props) => {
+const Sidebar: React.FC = () => {
   const { isSidebarOpen } = useSidebar();
   const [treeData, setTreeData] = useState<TreeNode[]>([]);
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());

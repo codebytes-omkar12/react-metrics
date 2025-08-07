@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+
 import ChildComponent from "./ChildComponent";
 import withPerformanceMonitor from "../HOC/withPerformanceMonitor";
 
