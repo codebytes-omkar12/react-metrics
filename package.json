@@ -6,6 +6,7 @@
     "dev": "vite",
     "backend:dev": "cd api && npm install && ts-node backend.ts",
     "build": "vite build",
+    "vercel-build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

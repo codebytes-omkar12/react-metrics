@@ -7,5 +7,13 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/backend.ts" },
     { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "builds": [
+    { "src": "vite.config.ts", "use": "@vercel/static-build", "config": { "distDir": "dist" } },
+    { "src": "api/backend.ts", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/backend.ts" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
