@@ -38,7 +38,7 @@ const AIHealthSummary: React.FC = React.memo(() => {
         const selectedMetrics = usePerformanceStore.getState().allMetrics[selectedComponentId] ?? {};
         const apiKey = localStorage.getItem('gemini_api_key');
 
-        const summaryResponse = await fetch("/api/ai/summary", {
+        const summaryResponse = await fetch("http://localhost:5001/ai/summary", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

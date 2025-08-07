@@ -104,7 +104,7 @@ const Sidebar: React.FC = () => {
   };
 
   useEffect(() => {
-    fetch("/api/list-files")
+    fetch("http://localhost:5001/list-files")
       .then((res) => res.json())
       .then((filePaths: string[]) => {
         const tree = buildTree(filePaths);

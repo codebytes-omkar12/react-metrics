@@ -36,7 +36,7 @@ const PerformanceDashboard: React.FC = React.memo(() => {
             const selectedMetrics = usePerformanceStore.getState().allMetrics[selectedComponentId] ?? {};
             const apiKey = localStorage.getItem('gemini_api_key');
 
-            const scoreResponse = await fetch("/api/ai/score", {
+            const scoreResponse = await fetch("http://localhost:5001/ai/score", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
