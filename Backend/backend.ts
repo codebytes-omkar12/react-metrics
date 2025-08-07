@@ -101,7 +101,7 @@ function analyzeHookUsageFromFile(fullPath: string) {
       args = callExpr.arguments.map(arg => arg.getText());
       firstArg = args.length > 0 ? args[0] : "";
     }
-    // --- MODIFICATION END ---
+    
 
     let tsDocText = "";
     const commentRanges = ts.getLeadingCommentRanges(fileContent, callExpr.pos) || [];
@@ -413,3 +413,5 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 app.listen(PORT, () => {
   console.log(`✅ Analyzer running at http://localhost:${PORT}`);
 });
+
+export default app;
