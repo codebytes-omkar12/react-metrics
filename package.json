@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "backend:dev": "cd Backend && npm install && ts-node backend.ts",
+    "backend:dev": "cd api && npm install && ts-node backend.ts",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

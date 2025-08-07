@@ -9,5 +9,5 @@
     "types": ["node"],
     "resolveJsonModule": true
   },
-  "include": ["Backend/*.ts"]
+  "include": ["api/*.ts"]
 }
