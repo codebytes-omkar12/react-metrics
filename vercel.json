@@ -1,9 +1,5 @@
 {
-  "functions": {
-    "api/backend.ts": {
-      "includeFiles": "src/**"
-    }
-  },
+  
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/backend.ts" },
     { "source": "/(.*)", "destination": "/index.html" }
